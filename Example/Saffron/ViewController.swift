@@ -10,6 +10,9 @@ class ViewController: UIViewController {
         // Do any additional setup after loading the view, typically from a nib.
         
         var sf2 = SoundFont()
+        sf2.soundEngineName = "EMU8000"
+        sf2.bankName = "Chipsound"
+        sf2.soundROMName = "ROM"
     }
 
     override func didReceiveMemoryWarning() {

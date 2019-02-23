@@ -15,6 +15,9 @@
 		A00869F1AD971F6FFF7C977440BD2182 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5A16F4CFC63FAC439D7A04994F579A03 /* Foundation.framework */; };
 		BD6ECEE899DCD31FA250BB985171C054 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5A16F4CFC63FAC439D7A04994F579A03 /* Foundation.framework */; };
 		C90EDBEF80B7167AD7D0A47506B6371B /* Pods-Saffron_Tests-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = CF367772C2266403F847FEDF2631FFF4 /* Pods-Saffron_Tests-dummy.m */; };
+		CFD89AAA22215FC6003970F0 /* Preset.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFD89AA922215FC6003970F0 /* Preset.swift */; };
+		CFD89AAB22216088003970F0 /* Instrument.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF088DB822215F0000BDDBEB /* Instrument.swift */; };
+		CFD89AAC2221608F003970F0 /* Sample.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF088DB622215EE900BDDBEB /* Sample.swift */; };
 		D4B8F02C79FF48370047790E8745C983 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5A16F4CFC63FAC439D7A04994F579A03 /* Foundation.framework */; };
 		E3C5BA5DF4F7F35B4C1D7294BF93C29A /* Pods-Saffron_Example-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = FC0E0132268257FC19E7F3C956C17D68 /* Pods-Saffron_Example-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		EDC185620AAF983D8359148076205773 /* Pods-Saffron_Example-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 1040502009ACD3B91C6A0C01035805EA /* Pods-Saffron_Example-dummy.m */; };
@@ -66,7 +69,10 @@
 		C1D7DFD23234E79E9CF03DC95EDCF71B /* Saffron-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Saffron-umbrella.h"; sourceTree = "<group>"; };
 		C4FC946C08C7BDB46092FEB74DD6C08C /* Saffron.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Saffron.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		CD9064EF7F9404D90FDF9CFE5C60EC3F /* Pods-Saffron_Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-Saffron_Tests.release.xcconfig"; sourceTree = "<group>"; };
+		CF088DB622215EE900BDDBEB /* Sample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Sample.swift; path = Saffron/Classes/Sample.swift; sourceTree = "<group>"; };
+		CF088DB822215F0000BDDBEB /* Instrument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Instrument.swift; path = Saffron/Classes/Instrument.swift; sourceTree = "<group>"; };
 		CF367772C2266403F847FEDF2631FFF4 /* Pods-Saffron_Tests-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "Pods-Saffron_Tests-dummy.m"; sourceTree = "<group>"; };
+		CFD89AA922215FC6003970F0 /* Preset.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Preset.swift; path = Saffron/Classes/Preset.swift; sourceTree = "<group>"; };
 		E21D2B74A4B5ED4C563AC6D620E0CBEB /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		E3C842B48F8052D92C2308540CDE60A8 /* Pods-Saffron_Example-frameworks.sh */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.script.sh; path = "Pods-Saffron_Example-frameworks.sh"; sourceTree = "<group>"; };
 		EF5481F2480E2546DCB88EC1DBF1AE75 /* Pods-Saffron_Example.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = "Pods-Saffron_Example.modulemap"; sourceTree = "<group>"; };
@@ -172,8 +178,11 @@
 		A0A8AAE5FCC681D34AD42B5926510712 /* Saffron */ = {
 			isa = PBXGroup;
 			children = (
+				CFD89AA922215FC6003970F0 /* Preset.swift */,
 				FC9F9C3C0CCF38B3C555083D4736BFB1 /* Chunks.swift */,
 				2866671787868F8913FE872D37C46CFD /* SoundFont.swift */,
+				CF088DB622215EE900BDDBEB /* Sample.swift */,
+				CF088DB822215F0000BDDBEB /* Instrument.swift */,
 				E62E8E67F74B916046A6D291C24A007C /* Pod */,
 				CC244769D1C2EBA6C77FF90A759FFA91 /* Support Files */,
 			);
@@ -322,6 +331,9 @@
 				LastSwiftUpdateCheck = 0930;
 				LastUpgradeCheck = 0930;
 				TargetAttributes = {
+					1B46CC707BF01BD9371F1D906DF7D6D2 = {
+						LastSwiftMigration = 1010;
+					};
 					A907055480E28360EE820C922DB8E35E = {
 						LastSwiftMigration = 1010;
 					};
@@ -359,8 +371,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CFD89AAB22216088003970F0 /* Instrument.swift in Sources */,
+				CFD89AAC2221608F003970F0 /* Sample.swift in Sources */,
 				71BB5ACCAEC1597ED88E08BF5537728C /* Chunks.swift in Sources */,
 				39FAC04CB37C1713EBBDCDAAB579E729 /* Saffron-dummy.m in Sources */,
+				CFD89AAA22215FC6003970F0 /* Preset.swift in Sources */,
 				0074E4C9C9BA70FE31572B08C84AA7F9 /* SoundFont.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -396,6 +411,7 @@
 			baseConfigurationReference = 91E1536CD3C2160A6B209AD632D0DC36 /* Pods-Saffron_Example.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_IDENTITY = "";
 				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
@@ -421,6 +437,7 @@
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
@@ -622,6 +639,7 @@
 			baseConfigurationReference = 3E8D4D00D55619B6202A523DB32CA2C1 /* Pods-Saffron_Example.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_IDENTITY = "";
 				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
@@ -646,6 +664,7 @@
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 				VERSIONING_SYSTEM = "apple-generic";
