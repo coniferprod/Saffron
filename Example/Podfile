@@ -1,0 +1,11 @@
+use_frameworks!
+
+target 'Saffron_Example' do
+  pod 'Saffron', :path => '../'
+
+  target 'Saffron_Tests' do
+    inherit! :search_paths
+
+    
+  end
+end
