@@ -1,11 +1,3 @@
-//
-//  ViewController.swift
-//  Saffron
-//
-//  Created by jere@coniferproductions.com on 02/23/2019.
-//  Copyright (c) 2019 jere@coniferproductions.com. All rights reserved.
-//
-
 import UIKit
 
 class ViewController: UIViewController {
