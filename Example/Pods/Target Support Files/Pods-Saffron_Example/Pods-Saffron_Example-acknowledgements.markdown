@@ -3,7 +3,7 @@ This application makes use of the following third party libraries:
 
 ## Saffron
 
-Copyright (c) 2019 jere@coniferproductions.com <jere@coniferproductions.com>
+Copyright (c) 2019 Conifer Productions Oy
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
