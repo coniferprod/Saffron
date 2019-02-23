@@ -1,6 +1,6 @@
 # Saffron
 
-[![CI Status](https://img.shields.io/travis/jere@coniferproductions.com/Saffron.svg?style=flat)](https://travis-ci.org/jere@coniferproductions.com/Saffron)
+[![CI Status](https://img.shields.io/travis/coniferprod/Saffron.svg?style=flat)](https://travis-ci.org/coniferprod/Saffron)
 [![Version](https://img.shields.io/cocoapods/v/Saffron.svg?style=flat)](https://cocoapods.org/pods/Saffron)
 [![License](https://img.shields.io/cocoapods/l/Saffron.svg?style=flat)](https://cocoapods.org/pods/Saffron)
 [![Platform](https://img.shields.io/cocoapods/p/Saffron.svg?style=flat)](https://cocoapods.org/pods/Saffron)
@@ -22,7 +22,7 @@ pod 'Saffron'
 
 ## Author
 
-jere@coniferproductions.com, jere@coniferproductions.com
+Jere Käpyaho, Conifer Productions Oy
 
 ## License
 

@@ -1,0 +1,16 @@
+PODS:
+  - Saffron (0.1.0)
+
+DEPENDENCIES:
+  - Saffron (from `../`)
+
+EXTERNAL SOURCES:
+  Saffron:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  Saffron: cbe9d8b275d556ec7c31c8329f808c102270056b
+
+PODFILE CHECKSUM: 9bb7a9b0368f38f01517019f7b3c7fcc21161ece
+
+COCOAPODS: 1.5.3
