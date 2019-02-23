@@ -16,9 +16,18 @@ To run the example project, clone the repo, and run `pod install` from the Examp
 Saffron is available through [CocoaPods](https://cocoapods.org). To install
 it, simply add the following line to your Podfile:
 
-```ruby
-pod 'Saffron'
-```
+```pod 'Saffron'```
+
+## Acknowledgments
+
+Based on the [SoundFont technical specification](http://www.synthfont.com/sfspec24.pdf).
+
+Influenced by [sf2cute](https://github.com/gocha/sf2cute).
+
+Help in testing SoundFonts:
+
+  * [Polyphone](https://www.polyphone-soundfonts.com/en/)
+  * [FluidSynth](https://github.com/FluidSynth/fluidsynth)
 
 ## Author
 
