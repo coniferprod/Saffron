@@ -1,19 +1,34 @@
 import Foundation
 
-public typealias ChunkSize = Word
-
 // Represents a chunk in the RIFF protocol
 public protocol RIFFChunk {
-    var name: String { get set }  // chunk name (FourCC)
-    var size: ChunkSize { get set }  // chunk size in bytes, including header
+    var name: FourCC { get set }  // chunk name (FourCC)
+    var size: DWord { get set }  // chunk size in bytes, including header
     var data: Data { get set }    // chunk data
     
     init(name: String)   // empty chunk with name
     init(name: String, data: Data)  // chunk with name and data
-    init(origin: RIFFChunk)  // copy of chunk from another (necessary?)
     
     func write(out: OutputStream) throws  // write chunk to stream
-    static func writeHeader(out: OutputStream, name: String, size: ChunkSize)
 }
 
-
+public class Chunk: RIFFChunk {
+    public var name: FourCC
+    public var size: DWord
+    public var data: Data
+    
+    required public init(name: String) {
+        self.name = fourCC(name)
+    }
+    
+    required public init(name: String, data: Data) {
+        self.name = fourCC(name)
+        self.data = data
+    }
+    
+    public func write(out: OutputStream) throws {
+        
+    }
+    
+    
+}

@@ -22,12 +22,15 @@ it, simply add the following line to your Podfile:
 
 Based on the [SoundFont technical specification](http://www.synthfont.com/sfspec24.pdf).
 
-Influenced by [sf2cute](https://github.com/gocha/sf2cute).
+Influenced by:
+  * [sf2cute](https://github.com/gocha/sf2cute)
+  * [Kermalis's C# SoundFont 2 library](https://github.com/Kermalis/SoundFont2) 
 
 Help in testing SoundFonts:
 
   * [Polyphone](https://www.polyphone-soundfonts.com/en/)
   * [FluidSynth](https://github.com/FluidSynth/fluidsynth)
+  * [sf2utils (Python)](https://gitlab.com/zeograd/sf2utils)
 
 ## Author
 

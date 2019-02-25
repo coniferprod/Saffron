@@ -5,6 +5,12 @@ import Foundation
 public typealias Byte = UInt8
 public typealias Word = UInt16
 public typealias DWord = UInt32
+public typealias FourCC = DWord
+
+public struct VersionTag {
+    let major: UInt16
+    let minor: UInt16
+}
 
 public class SoundFont {
     public var soundEngineName: String?
@@ -32,3 +38,15 @@ public class SoundFont {
     fileprivate let defaultSoundEngine = "EMU8000"
     fileprivate let defaultBankName = "Untitled"
 }
+
+public func fourCC(_ string: String) -> FourCC {
+    let utf8 = string.utf8
+    precondition(utf8.count == 4, "Must be a four-character string")
+    var out: UInt32 = 0
+    for char in utf8 {
+        out <<= 8
+        out |= UInt32(char)
+    }
+    return out
+}
+
