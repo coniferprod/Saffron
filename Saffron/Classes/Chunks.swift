@@ -27,7 +27,7 @@ public class Chunk {
             return DWord(8 + chunkSize)
         }
     }
-    public var data: ChunkData  // chunk data (fixed size array)
+    private var data: ChunkData  // chunk data (fixed size array)
     
     public init(name: String, data: ChunkData) {
         self.name = fourCC(name)
@@ -88,13 +88,44 @@ public class SampleChunk: Chunk {
         }
     }
     
+    override public var size: DWord {
+        return DWord(8 + samplePoolSize)
+    }
+    
     public init(samples: [Sample]) {
         self.samples = samples
+
+        // TODO: Prepare the chunk data
         
         
-        super.init(name: "smpl")
+        for sample in self.samples {
+            
+        }
+        
+        super.init(name: "smpl", dataSize: Int(samplePoolSize))
     }
 }
+
+public class PresetHeaderChunk: Chunk {
+    let itemSize = 38  // the item size of "phdr" chunk
+    
+    var presets: [Preset]
+    
+    override public var size: DWord {
+        return DWord(8 + itemSize * presets.count)
+    }
+    
+    public init(presets: [Preset]) {
+        self.presets = presets
+        
+        // TODO: Prepare the chunk data
+        
+        super.init(name: "phdr", dataSize: Int(size))
+    }
+    
+    
+}
+
 
 
 

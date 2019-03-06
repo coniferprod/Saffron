@@ -119,11 +119,11 @@ public class SoundFont {
         // TODO: Handle pdta
         // PHDR, PBAG, PMOD, PGEN, INST, IBAG, IMOD, IGEN, SHDR
         /*
-        subchunks.append(PresetChunk(presets: self.presets))
+        subchunks.append(PresetHeaderChunk(presets: self.presets))
         subchunks.append(PresetZoneChunk(presets: self.presets))
         subchunks.append(PresetZoneModulatorChunk(presets: self.presets))
         subchunks.append(PresetZoneGeneratorChunk(presets: self.presets))
-        subchunks.append(InstrumentChunk(instruments: self.instruments))
+        subchunks.append(InstrumentHeaderChunk(instruments: self.instruments))
         subchunks.append(InstrumentZoneChunk(instruments: self.instruments))
         subchunks.append(InstrumentZoneModulatorChunk(instruments: self.instruments))
         subchunks.append(InstrumentZoneGeneratorChunk(instruments: self.instruments))
