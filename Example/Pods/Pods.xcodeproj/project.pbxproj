@@ -11,6 +11,7 @@
 		2C81169FE18208B675F8D22939F0BB5C /* Saffron-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = C1D7DFD23234E79E9CF03DC95EDCF71B /* Saffron-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		39FAC04CB37C1713EBBDCDAAB579E729 /* Saffron-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 6B786A45464143C1D321854B83FD87C4 /* Saffron-dummy.m */; };
 		5A844C77A643DF898F6BA508A170AF85 /* Pods-Saffron_Tests-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = A5AB05BFE87405BD58DCD4AB1DA5D675 /* Pods-Saffron_Tests-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		6FAEEF34222FF70E00915044 /* FixedSizeArray.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FAEEF32222FE79A00915044 /* FixedSizeArray.swift */; };
 		6FE01BF4222406AF00136A24 /* RIFF.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FE01BF22224054A00136A24 /* RIFF.swift */; };
 		71BB5ACCAEC1597ED88E08BF5537728C /* Chunks.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC9F9C3C0CCF38B3C555083D4736BFB1 /* Chunks.swift */; };
 		A00869F1AD971F6FFF7C977440BD2182 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5A16F4CFC63FAC439D7A04994F579A03 /* Foundation.framework */; };
@@ -55,6 +56,7 @@
 		5D369F16E4C95B984625FC2367A14159 /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		6B786A45464143C1D321854B83FD87C4 /* Saffron-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "Saffron-dummy.m"; sourceTree = "<group>"; };
 		6CEC315A0EA20F19004DFE099B59086C /* Pods-Saffron_Example-acknowledgements.markdown */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = "Pods-Saffron_Example-acknowledgements.markdown"; sourceTree = "<group>"; };
+		6FAEEF32222FE79A00915044 /* FixedSizeArray.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FixedSizeArray.swift; path = Saffron/Classes/FixedSizeArray.swift; sourceTree = "<group>"; };
 		6FE01BF22224054A00136A24 /* RIFF.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RIFF.swift; path = Saffron/Classes/RIFF.swift; sourceTree = "<group>"; };
 		80615A2D0CA6AAF883EAA21CBBD65F21 /* Saffron.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = Saffron.modulemap; sourceTree = "<group>"; };
 		8BE5FD5DDF38E0E146532F2E3A6DE5BB /* Pods_Saffron_Example.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Saffron_Example.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -186,6 +188,7 @@
 				CF088DB622215EE900BDDBEB /* Sample.swift */,
 				CF088DB822215F0000BDDBEB /* Instrument.swift */,
 				6FE01BF22224054A00136A24 /* RIFF.swift */,
+				6FAEEF32222FE79A00915044 /* FixedSizeArray.swift */,
 				E62E8E67F74B916046A6D291C24A007C /* Pod */,
 				CC244769D1C2EBA6C77FF90A759FFA91 /* Support Files */,
 			);
@@ -332,7 +335,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0930;
-				LastUpgradeCheck = 0930;
+				LastUpgradeCheck = 1010;
 				TargetAttributes = {
 					1B46CC707BF01BD9371F1D906DF7D6D2 = {
 						LastSwiftMigration = 1010;
@@ -375,6 +378,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CFD89AAB22216088003970F0 /* Instrument.swift in Sources */,
+				6FAEEF34222FF70E00915044 /* FixedSizeArray.swift in Sources */,
 				CFD89AAC2221608F003970F0 /* Sample.swift in Sources */,
 				6FE01BF4222406AF00136A24 /* RIFF.swift in Sources */,
 				71BB5ACCAEC1597ED88E08BF5537728C /* Chunks.swift in Sources */,
@@ -502,6 +506,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRIP_INSTALLED_PRODUCT = NO;
+				SWIFT_COMPILATION_MODE = wholemodule;
 				SYMROOT = "${SRCROOT}/../build";
 			};
 			name = Release;
