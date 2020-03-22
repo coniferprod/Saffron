@@ -7,12 +7,22 @@ class ViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
+
+        let name = "RIFF"
+        let fourCCName = name.toFourCC()
+        let nameFromFourCC = String(fourCC: fourCCName)
+        print("Name = '\(name)', converted back to string from FourCC = '\(nameFromFourCC)'")
         
-        var sf2 = SoundFont()
+        let version = SoundFontVersion(major: 2, minor: 1)
+        let chunkData = ChunkData(maxSize: 4, initialValue: 0)
+        
+        
+        let sf2 = SoundFont()
         sf2.soundEngineName = "EMU8000"
         sf2.bankName = "Chipsound"
         sf2.soundROMName = "ROM"
+        
+        print(sf2)
     }
 
     override func didReceiveMemoryWarning() {

@@ -4,6 +4,8 @@ public enum FixedSizeArrayError: Error {
     case outOfBounds(index: Int)
 }
 
+// There is no native support for fixed-size arrays in Swift.
+// See proposal https://bugs.swift.org/browse/SR-4548
 // Based on https://github.com/raywenderlich/swift-algorithm-club/tree/master/Fixed%20Size%20Array
 public struct FixedSizeArray<T> {
     private var maxSize: Int

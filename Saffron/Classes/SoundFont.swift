@@ -1,8 +1,13 @@
 import Foundation
 
-public struct Version {
-    let major: UInt16
-    let minor: UInt16
+public struct VersionTag {
+    let major: Word
+    let minor: Word
+    
+    public init(major: Word, minor: Word) {
+        self.major = major
+        self.minor = minor
+    }
 }
 
 public struct Limits {
@@ -26,7 +31,7 @@ extension StringProtocol {
     }
 }
 
-public class SoundFont {
+public class SoundFont: CustomStringConvertible {
     public var soundEngineName: String
     public var bankName: String
     public var soundROMName: String?
@@ -36,7 +41,9 @@ public class SoundFont {
     var copyright: String?
     var comments: String?
     var software: String?
-    var soundROMVersion: Version?
+    var soundROMVersion: VersionTag?
+    
+    var riff: RIFF
     
     var presets = [Preset]()
     var instruments = [Instrument]()
@@ -45,14 +52,14 @@ public class SoundFont {
     public init() {
         self.soundEngineName = "Unknown"
         self.bankName = "unknown"
+        
+        self.riff = RIFF(name: "sfbk")
+        self.riff.addChunk(makeInfoListChunk())
+        self.riff.addChunk(makeSdtaListChunk())
+        self.riff.addChunk(makePdtaListChunk())
     }
     
     public func write(fileName: String) throws {
-        var riff = RIFF(name: "sfbk")
-        
-        riff.addChunk(makeInfoListChunk())
-        riff.addChunk(makeSdtaListChunk())
-        riff.addChunk(makePdtaListChunk())
 
         // TODO: Write everything to output file
     }
@@ -65,7 +72,7 @@ public class SoundFont {
     
     private func makeInfoListChunk() -> ListChunk {
         var subchunks = [Chunk]()
-        subchunks.append(makeVersionChunk(name: "ifil", version: Version(major: 2, minor: 1)))
+        subchunks.append(makeVersionChunk(name: "ifil", version: VersionTag(major: 2, minor: 1)))
         subchunks.append(makeZSTRChunk(name: "isng", data: stringUpToLimit(s: self.soundEngineName, maxLength: Limits.infoTextMaxLength)))
         subchunks.append(makeZSTRChunk(name: "INAM", data: stringUpToLimit(s: self.bankName, maxLength: Limits.infoTextMaxLength)))
         
@@ -118,8 +125,8 @@ public class SoundFont {
 
         // TODO: Handle pdta
         // PHDR, PBAG, PMOD, PGEN, INST, IBAG, IMOD, IGEN, SHDR
-        /*
         subchunks.append(PresetHeaderChunk(presets: self.presets))
+        /*
         subchunks.append(PresetZoneChunk(presets: self.presets))
         subchunks.append(PresetZoneModulatorChunk(presets: self.presets))
         subchunks.append(PresetZoneGeneratorChunk(presets: self.presets))
@@ -133,7 +140,7 @@ public class SoundFont {
         return ListChunk(name: "pdta", subchunks: subchunks)
     }
     
-    private func makeVersionChunk(name: String, version: Version) -> Chunk {
+    private func makeVersionChunk(name: String, version: VersionTag) -> Chunk {
         let versionData = ChunkData(maxSize: 4, initialValue: 0)
         return Chunk(name: name, data: versionData)
     }
@@ -157,5 +164,12 @@ public class SoundFont {
     
     fileprivate let defaultSoundEngine = "EMU8000"
     fileprivate let defaultBankName = "Untitled"
+    
+    public var description: String {
+        var buf = ""
+        buf += "Bank = \(self.bankName)\n"
+        buf += "Engine = \(self.bankName)\n\n"
+        buf += "\(self.riff)\n"
+        return buf
+    }
 }
-

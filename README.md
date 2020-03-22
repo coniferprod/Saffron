@@ -20,7 +20,9 @@ it, simply add the following line to your Podfile:
 
 ## Acknowledgments
 
-Based on the [SoundFont technical specification](http://www.synthfont.com/sfspec24.pdf).
+Based on:
+  * The [SoundFont Technical Specification](http://www.synthfont.com/sfspec24.pdf)
+  * The [SoundFont 2.1 Application Note](http://freepats.zenvoid.org/sf2/sfapp21.pdf)
 
 Influenced by:
   * [sf2cute](https://github.com/gocha/sf2cute)
@@ -39,3 +41,7 @@ Jere Käpyaho, Conifer Productions Oy
 ## License
 
 Saffron is available under the MIT license. See the LICENSE file for more info.
+
+## Trademarks
+
+SoundFont is a registered trademark of E-mu Systems, Inc.

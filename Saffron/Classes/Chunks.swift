@@ -16,7 +16,7 @@ public protocol Chunk {
 */
 
 // Represents a chunk in the RIFF protocol
-public class Chunk {
+public class Chunk: CustomStringConvertible {
     public var name: FourCC   // chunk name (FourCC)
     public var size: DWord { // chunk size in bytes, including header
         get {
@@ -30,17 +30,20 @@ public class Chunk {
     private var data: ChunkData  // chunk data (fixed size array)
     
     public init(name: String, data: ChunkData) {
-        self.name = fourCC(name)
+        self.name = name.toFourCC()
         self.data = data
         //self.size = DWord(data.size)
     }
     
     public init(name: String, dataSize: Int) {
-        self.name = fourCC(name)
+        self.name = name.toFourCC()
         self.data = ChunkData(maxSize: dataSize, initialValue: 0)
         //self.size = DWord(dataSize)
     }
     
+    public var description: String {
+        return String(fourCC: self.name)  // use String extension to get string from FourCC
+    }
 }
 
 // 'Two types of chunks, the “RIFF” and “LIST” chunks, may contain nested chunks called sub-chunks as their data.' (SoundFont specification, section 3.1)
@@ -54,6 +57,7 @@ public class RIFFChunk: ChunkBase {
 }
 */
 
+/// A chunk with sub-chunks.
 public class ListChunk: Chunk {
     var subchunks: [Chunk]
     
@@ -65,6 +69,25 @@ public class ListChunk: Chunk {
         super.init(name: name, data: subchunkData)
     }
     
+    public override var description: String {
+        let chunkName = String(fourCC: self.name)
+        var buf = "\(chunkName):\n"
+        for chunk in subchunks {
+            buf += "    \(chunk)\n"
+        }
+        return buf
+    }
+}
+
+public class InfoListChunk: ListChunk {
+    public init() {
+        var chunks = [Chunk]()
+        let versionData = ChunkData(maxSize: 4, initialValue: 0)
+        let versionChunk = Chunk(name: "ifil", data: versionData)
+        chunks.append(versionChunk)
+
+        super.init(name: "INFO", subchunks: chunks)
+    }
 }
 
 enum SoundFontError: Error {
@@ -95,14 +118,16 @@ public class SampleChunk: Chunk {
     public init(samples: [Sample]) {
         self.samples = samples
 
+        //super.init(name: "smpl", dataSize: Int(samplePoolSize))
+        super.init(name: "smpl", dataSize: 0)
+
+
         // TODO: Prepare the chunk data
-        
-        
+                
         for sample in self.samples {
             
         }
         
-        super.init(name: "smpl", dataSize: Int(samplePoolSize))
     }
 }
 
@@ -118,14 +143,39 @@ public class PresetHeaderChunk: Chunk {
     public init(presets: [Preset]) {
         self.presets = presets
         
+        //super.init(name: "phdr", dataSize: Int(size))
+        super.init(name: "phdr", dataSize: 0)
+
         // TODO: Prepare the chunk data
-        
-        super.init(name: "phdr", dataSize: Int(size))
-    }
-    
-    
+    }    
 }
 
+public class PresetBagChunk: Chunk {
+    let itemSize = 4  // the item size of "pbag" chunk
 
+}
 
-
+public class VersionChunk: Chunk {
+    private var version: VersionTag
+    
+    public init(version: VersionTag) {
+        self.version = version
+        
+        // Prepare the chunk data from the version struct
+        var versionData = ChunkData(maxSize: 4, initialValue: 0)
+        
+        do {
+            try versionData.set(index: 0, Byte(version.major >> 8))
+            try versionData.set(index: 1, UInt8(version.major & 0x00ff))
+            
+            try versionData.set(index: 2, Byte(version.minor >> 8))
+            try versionData.set(index: 3, UInt8(version.minor & 0x00ff))
+        }
+        catch {
+            print("Index out of bounds")
+        }
+        
+        super.init(name: "")
+        
+    }
+}
