@@ -43,20 +43,24 @@ public class SoundFont: CustomStringConvertible {
     var software: String?
     var soundROMVersion: VersionTag?
     
-    var riff: RIFF
-    
     var presets = [Preset]()
     var instruments = [Instrument]()
     var samples = [Sample]()
+
+    var riff: RIFFChunk
     
     public init() {
         self.soundEngineName = "Unknown"
         self.bankName = "unknown"
         
-        self.riff = RIFF(name: "sfbk")
-        self.riff.addChunk(makeInfoListChunk())
-        self.riff.addChunk(makeSdtaListChunk())
-        self.riff.addChunk(makePdtaListChunk())
+        let infoListChunk = InfoListChunk()
+        let sampleDataChunk = SampleDataChunk()
+        let presetDataChunk = PresetDataChunk()
+        
+        self.riff = RIFFChunk(subchunks: [infoListChunk, sampleDataChunk, presetDataChunk])
+        //self.riff.addChunk(makeInfoListChunk())
+        //self.riff.addChunk(makeSdtaListChunk())
+        //self.riff.addChunk(makePdtaListChunk())
     }
     
     public func write(fileName: String) throws {

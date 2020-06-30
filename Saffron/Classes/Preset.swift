@@ -53,7 +53,14 @@ public struct ModulatorList {
     }
 }
 
-public typealias GenAmountType = Word  // this is actually a union type, see spec
+//public typealias GenAmountType = Word  // this is actually a union type, see spec
+
+// Use Swift enum as a discriminated union
+public enum GenAmountType {
+    case ranges(RangesType)
+    case shortAmount(Short)
+    case wordAmount(Word)
+}
 
 // PGEN sub-chunk, see section 7.5
 public struct GeneratorList {
@@ -113,6 +120,16 @@ public struct InstrumentGeneratorList {
     public init(genOper: SFGenerator, genAmount: GenAmountType) {
         self.genOper = genOper
         self.genAmount = genAmount
+    }
+}
+
+public struct RangesType {
+    let low: Byte
+    let high: Byte
+    
+    public init(low: Byte, high: Byte) {
+        self.low = low
+        self.high = high
     }
 }
 

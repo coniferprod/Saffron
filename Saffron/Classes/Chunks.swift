@@ -2,22 +2,18 @@ import Foundation
 
 public typealias ChunkData = FixedSizeArray<Byte>
 
-/*
 public protocol Chunk {
-    var name: FourCC { get set }
+    var name: String { get set }
     var size: DWord { get }  // chunk size in bytes, including header
     var data: ChunkData { get set }    // chunk data
     
     init(name: String, data: ChunkData)  // chunk with name and data
     init(name: String, dataSize: Int)
-    
-    func write(out: OutputStream) throws  // write chunk to stream
 }
-*/
 
 // Represents a chunk in the RIFF protocol
 public class Chunk: CustomStringConvertible {
-    public var name: FourCC   // chunk name (FourCC)
+    public var name: String   // chunk name (will have to convert this to and from FourCC)
     public var size: DWord { // chunk size in bytes, including header
         get {
             var chunkSize = self.data.size
@@ -30,36 +26,32 @@ public class Chunk: CustomStringConvertible {
     private var data: ChunkData  // chunk data (fixed size array)
     
     public init(name: String, data: ChunkData) {
-        self.name = name.toFourCC()
+        self.name = name
         self.data = data
         //self.size = DWord(data.size)
     }
     
     public init(name: String, dataSize: Int) {
-        self.name = name.toFourCC()
+        self.name = name
         self.data = ChunkData(maxSize: dataSize, initialValue: 0)
         //self.size = DWord(dataSize)
     }
     
     public var description: String {
-        return String(fourCC: self.name)  // use String extension to get string from FourCC
+        return self.name
     }
 }
 
 // 'Two types of chunks, the “RIFF” and “LIST” chunks, may contain nested chunks called sub-chunks as their data.' (SoundFont specification, section 3.1)
 
-/*
-public class RIFFChunk: ChunkBase {
-    public func write(out: OutputStream) throws {
-        
-    }
-    
-}
-*/
-
 /// A chunk with sub-chunks.
 public class ListChunk: Chunk {
     var subchunks: [Chunk]
+
+    public init(name: String) {
+        subchunks = [Chunk]()
+        super.init(name: name, dataSize: 0)
+    }
     
     public init(name: String, subchunks: [Chunk]) {
         self.subchunks = subchunks
@@ -70,16 +62,22 @@ public class ListChunk: Chunk {
     }
     
     public override var description: String {
-        let chunkName = String(fourCC: self.name)
+        let chunkName = self.name
         var buf = "\(chunkName):\n"
         for chunk in subchunks {
             buf += "    \(chunk)\n"
         }
         return buf
     }
+    
+    public func addSubchunk(chunk: Chunk) {
+        self.subchunks.append(chunk)
+    }
 }
 
 public class InfoListChunk: ListChunk {
+    let defaultEngine = "EMU8000"
+    
     public init() {
         var chunks = [Chunk]()
         let versionData = ChunkData(maxSize: 4, initialValue: 0)
@@ -94,7 +92,17 @@ enum SoundFontError: Error {
     case samplePoolOverflow
 }
 
-public class SampleChunk: Chunk {
+public class SampleSubChunk: Chunk {
+    var samples: [Short]
+    
+    public init(data: Data) {
+        self.name = "smpl"
+        
+    }
+        
+}
+
+public class SdtaListChunk: ListChunk {
     var samples: [Sample]
     
     var samplePoolSize: DWord {
@@ -116,10 +124,11 @@ public class SampleChunk: Chunk {
     }
     
     public init(samples: [Sample]) {
+        self.name = "sdta"
+        
         self.samples = samples
 
         //super.init(name: "smpl", dataSize: Int(samplePoolSize))
-        super.init(name: "smpl", dataSize: 0)
 
 
         // TODO: Prepare the chunk data
@@ -127,6 +136,13 @@ public class SampleChunk: Chunk {
         for sample in self.samples {
             
         }
+        
+    }
+}
+
+public class PdtaListChunk: ListChunk {
+    public init() {
+        super.init(name: "pdta")
         
     }
 }
@@ -155,10 +171,42 @@ public class PresetBagChunk: Chunk {
 
 }
 
+public class HeaderSubChunk: Chunk {
+    var maxSize: Int
+    
+    private var fieldValue: [Byte]
+    
+    var field: String {
+        get {
+            
+            
+        }
+        
+        set {
+            
+        }
+    }
+    
+    
+    public init(subChunkName: String, maxSize: Int = 0x100) {
+        self.name = subChunkName
+        
+        self.maxSize = maxSize
+    }
+    
+    public override var description: String {
+        let chunkName = self.name
+        var buf = "Header chunk: name=\(chunkName), maxSize=\(maxSize)"
+        return buf
+    }
+}
+    
+    
 public class VersionChunk: Chunk {
     private var version: VersionTag
     
     public init(version: VersionTag) {
+        self.name = "iver"
         self.version = version
         
         // Prepare the chunk data from the version struct
@@ -174,8 +222,6 @@ public class VersionChunk: Chunk {
         catch {
             print("Index out of bounds")
         }
-        
-        super.init(name: "")
-        
+                
     }
 }
