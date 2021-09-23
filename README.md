@@ -1,22 +1,10 @@
 # Saffron
 
-[![CI Status](https://img.shields.io/travis/coniferprod/Saffron.svg?style=flat)](https://travis-ci.org/coniferprod/Saffron)
-[![Version](https://img.shields.io/cocoapods/v/Saffron.svg?style=flat)](https://cocoapods.org/pods/Saffron)
-[![License](https://img.shields.io/cocoapods/l/Saffron.svg?style=flat)](https://cocoapods.org/pods/Saffron)
-[![Platform](https://img.shields.io/cocoapods/p/Saffron.svg?style=flat)](https://cocoapods.org/pods/Saffron)
+SoundFont 2.0 (SF2) library for iOS and macOS Swift applications.
 
-## Example
+## Building with Travis CI
 
-To run the example project, clone the repo, and run `pod install` from the Example directory first.
-
-## Requirements
-
-## Installation
-
-Saffron is available through [CocoaPods](https://cocoapods.org). To install
-it, simply add the following line to your Podfile:
-
-```pod 'Saffron'```
+[Swift Package Continuous Integration Guide](https://learningswift.brightdigit.com/swift-package-continuous-integration-guide/)
 
 ## Acknowledgments
 
@@ -26,7 +14,8 @@ Based on:
 
 Influenced by:
   * [sf2cute](https://github.com/gocha/sf2cute)
-  * [Kermalis's C# SoundFont 2 library](https://github.com/Kermalis/SoundFont2) 
+  * [Kermalis's C# SoundFont 2 library](https://github.com/Kermalis/SoundFont2)
+  * [GDSoundFontParser by Gene de Lisa](https://github.com/genedelisa/GDSoundFontParser)
 
 Help in testing SoundFonts:
 
@@ -34,13 +23,9 @@ Help in testing SoundFonts:
   * [FluidSynth](https://github.com/FluidSynth/fluidsynth)
   * [sf2utils (Python)](https://gitlab.com/zeograd/sf2utils)
 
-## Author
-
-Jere Käpyaho, Conifer Productions Oy
-
 ## License
 
-Saffron is available under the MIT license. See the LICENSE file for more info.
+Saffron is available under the MIT License. See the LICENSE file for more info.
 
 ## Trademarks
 
