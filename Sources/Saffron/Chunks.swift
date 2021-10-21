@@ -1,41 +1,103 @@
 import Foundation
 
-/// Represents a chunk in the RIFF protocol
-public class Chunk {
-    public var name: String  // chunk type identifier (converted to FourCC as necessary)
-    public var size: DWord  // chunk size field (size of data in bytes)
-    public var data: ByteArray  // chunk data
-
-    public init(name: String, size: DWord, data: ByteArray) {
-        self.name = name
-        self.size = size
-        self.data = data
-    }
+public protocol Chunk {
+    var name: String { get }  // chunk type identifier (converted to FourCC as necessary)
+    var size: DWord { get } // chunk size field (size of data in bytes)
+    func write(out: OutputStream)
+    func writeHeader(out: OutputStream, name: String, size: Int)
 }
 
-extension Chunk: CustomStringConvertible {
-    public var description: String {
-        return self.name
+/// Represents a chunk in the RIFF protocol
+public struct SimpleChunk {
+    var _name: String
+    var data: ByteArray
+}
+
+extension SimpleChunk: Chunk {
+    public var name: String {
+        get {
+            return _name
+        }
+    }
+    
+    public var size: DWord {
+        var sz = self.data.count
+        if sz % 2 != 0 {
+            sz += 1
+        }
+        return DWord(8 + sz)
+    }
+    
+    public func write(out: OutputStream) {
+        self.writeHeader(out: out, name: self.name, size: Int(self.size))
+        // TODO: Write out the chunk data
+        
+        // Write a padding byte if necessary
+        if self.data.count % 2 != 0 {
+            // TODO: Write a zero byte to `out`
+        }
+    }
+    
+    public func writeHeader(out: OutputStream, name: String, size: Int) {
+        // TODO: write the chunk name
+        // TODO: write the chunk size
     }
 }
 
 /// A chunk with sub-chunks.
-public class ListChunk {
-    public var name: String   // chunk name (will have to convert this to and from FourCC)
+public struct ListChunk {
+    var _name: String   // chunk name (will have to convert this to and from FourCC)
+    var data: ByteArray
+
     public var subchunks: [Chunk]
 
     public init(name: String) {
-        self.name = name
+        self._name = name
         self.subchunks = [Chunk]()
     }
     
     public init(name: String, subchunks: [Chunk]) {
-        self.name = name
+        self._name = name
         self.subchunks = subchunks
     }
     
-    public func addSubchunk(chunk: Chunk) {
+    public mutating func addSubchunk(chunk: Chunk) {
         self.subchunks.append(chunk)
+    }
+    
+    public mutating func clearSubchunks() {
+        self.subchunks.removeAll()
+    }
+}
+
+extension ListChunk: Chunk {
+    public var name: String {
+        get {
+            return _name
+        }
+    }
+    
+    public var size: DWord {
+        var sz = 0
+        for subchunk in self.subchunks {
+            sz += Int(subchunk.size)
+        }
+        return DWord(12 + sz)
+    }
+    
+    public func write(out: OutputStream) {
+        self.writeHeader(out: out, name: self.name, size: Int(self.size - 8))
+        for subchunk in self.subchunks {
+            subchunk.write(out: out)
+        }
+    }
+    
+    public func writeHeader(out: OutputStream, name: String, size: Int) {
+        // TODO: Write the chunk ID "LIST"
+        
+        // TODO: Write the chunk size
+        
+        // TODO: Write the list type
     }
 }
 
@@ -47,6 +109,354 @@ extension ListChunk: CustomStringConvertible {
             buf += "    \(chunk)\n"
         }
         return buf
+    }
+}
+
+public class RIFF {
+    var name: String
+    var chunks: [Chunk]
+    
+    public init(name: String) {
+        self.name = name
+        self.chunks = [Chunk]()
+    }
+    
+    public func add(chunk: Chunk) {
+        self.chunks.append(chunk)
+    }
+    
+    public func clearChunks() {
+        self.chunks.removeAll()
+    }
+    
+    public var size: DWord {
+        get {
+            var sz = 0
+            for chunk in self.chunks {
+                sz += Int(chunk.size)
+            }
+        }
+    }
+    
+    public func write(out: OutputStream) {
+        self.writeHeader(out: out, name: self.name, size: Int(self.size - 8))
+        for chunk in self.chunks {
+            chunk.write(out: out)
+        }
+    }
+    
+    public func writeHeader(out: OutputStream, name: String, size: Int) {
+        // TODO: Write the ID "RIFF"
+
+        // TODO: Write the file size
+        
+        // TODO: Write the form type
+
+    }
+}
+
+public class IbagChunk {
+    let itemSize = 4  // the item size of "ibag" chunk in bytes
+    
+    public var instruments: [Instrument]
+    
+    public init() {
+        self.instruments = [Instrument]()
+    }
+    
+    public init(instruments: [Instrument]) {
+        self.instruments = instruments
+    }
+    
+    public func writeItem(out: OutputStream, generatorIndex: Word, modulatorIndex: Word) {
+        // TODO: Write generator index
+        // TODO: Write modulator index
+    }
+    
+    public var numItems: Word {
+        var numZones = 1  // 1 = terminator
+        for instrument in self.instruments {
+            // Count the global zone
+            if instrument.hasGlobalZone {
+                numZones += 1
+            }
+            
+            // Count the instrument zones
+            numZones += instrument.zones.size
+        }
+        return Word(numZones)
+    }
+}
+
+extension IbagChunk: Chunk {
+    public var name: String {
+        get {
+            return "ibag"
+        }
+    }
+    
+    public var size: DWord {
+        return DWord(itemSize * self.instruments.count)
+    }
+
+    public func write(out: OutputStream) {
+        self.writeHeader(out: out, name: self.name, size: Int(self.size))
+        
+        // Instruments:
+        var generatorIndex = 0
+        var modulatorIndex = 0
+        for instrument in self.instruments {
+            if instrument.hasGlobalZone {
+                // Write the global zone
+                self.writeItem(out: out, generatorIndex: Word(generatorIndex), modulatorIndex: Word(modulatorIndex))
+                
+                generatorIndex += instrument.globalZone.generators.size
+                modulatorIndex += instrument.globalZone.modulators.size
+            }
+
+            // Instrument zones:
+            for zone in instrument.zones {
+                self.writeItem(out: out, generatorIndex: Word(generatorIndex), modulatorIndex: Word(modulatorIndex))
+                
+                generatorIndex += (zone.hasSample ? 1 : 0) + zone.generators.size
+                modulatorIndex += zone.modulators.size
+            }
+        }
+        
+        // Write out the last terminator item
+        self.writeItem(out: out, generatorIndex: Word(generatorIndex), modulatorIndex: Word(modulatorIndex))
+        
+        // Write a padding byte if necessary
+        if self.size % 2 != 0 {
+            // TODO: Write a zero byte
+        }
+    }
+    
+    public func writeHeader(out: OutputStream, name: String, size: Int) {
+        // TODO: write the chunk name
+        // TODO: write the chunk size
+    }
+}
+
+public class IgenChunk {
+    let itemSize = 4  // the item size of "igen" chunk in bytes
+
+    var instruments: [Instrument]
+    
+    public init(instruments: [Instrument], sampleIndexMap: [Sample : Word]) {
+        self.instruments = instruments
+    }
+    
+    public var numItems: Word {
+        var numGenerators = 1 // 1 = terminator
+        for instrument in self.instruments {
+            // Count the generators in the global zone.
+            if instrument.hasGlobalZone {
+                numGenerators += instrument.globalZone.generators.size()
+            }
+
+            // Count the generators in the instrument zones.
+            for zone in instrument.zones {
+                numGenerators += (zone.hasSample ? 1 : 0) + zone.generators.size()
+            }
+        }
+        return Word(numGenerators)
+    }
+}
+
+extension IgenChunk: Chunk {
+    public var name: String {
+        get {
+            return "igen"
+        }
+    }
+    
+    public var size: DWord {
+        return DWord(self.itemSize * Int(self.numItems))
+    }
+
+    public func write(out: OutputStream) {
+        self.writeHeader(out: out, name: self.name, size: Int(self.size))
+        
+    }
+    
+    public func writeHeader(out: OutputStream, name: String, size: Int) {
+        // TODO: write the chunk name
+        // TODO: write the chunk size
+    }
+}
+
+public class ImodChunk {
+    let itemSize = 10
+    
+    var instruments: [Instrument]
+    
+    public init(instruments: [Instrument]) {
+        self.instruments = instruments
+    }
+    
+    public var numItems: Word {
+        var numModulators = 1 // 1 = terminator
+        for instrument in self.instruments {
+            // Count the modulators in the global zone.
+            if instrument.hasGlobalZone {
+                numModulators += instrument.globalZone.modulators.count
+            }
+
+            // Count the modulators in the instrument zones.
+            for zone in instrument.zones {
+                numModulators += zone.modulators.count
+            }
+        }
+        return Word(numModulators)
+    }
+}
+
+extension ImodChunk: Chunk {
+    public var name: String {
+        get {
+            return "imod"
+        }
+    }
+    
+    public var size: DWord {
+        return DWord(self.itemSize * Int(self.numItems))
+    }
+
+    public func write(out: OutputStream) {
+        self.writeHeader(out: out, name: self.name, size: Int(self.size))
+        
+    }
+    
+    public func writeHeader(out: OutputStream, name: String, size: Int) {
+        // TODO: write the chunk name
+        // TODO: write the chunk size
+    }
+}
+
+public class InstChunk {
+    let itemSize = 22
+
+    var instruments: [Instrument]
+    
+    public init(instruments: [Instrument]) {
+        self.instruments = instruments
+    }
+    
+    public var numItems: Word {
+        var numItems = self.instruments.count + 1
+        return Word(numItems)
+    }
+    
+    public func writeItem(out: OutputStream, name: String, index: Word) {
+        // TODO: Write instrument name
+        // TODO: Write instrument bag index
+    }
+}
+
+extension InstChunk: Chunk {
+    public var name: String {
+        get {
+            return "imod"
+        }
+    }
+    
+    public var size: DWord {
+        return DWord(self.itemSize * Int(self.numItems))
+    }
+
+    public func write(out: OutputStream) {
+        self.writeHeader(out: out, name: self.name, size: Int(self.size))
+        
+        var index = 0
+        for instrument in self.instruments {
+            self.writeItem(out: out, name: instrument.name, index: Word(index))
+        }
+        
+    }
+    
+    public func writeHeader(out: OutputStream, name: String, size: Int) {
+        // TODO: write the chunk name
+        // TODO: write the chunk size
+    }
+}
+
+public class PbagChunk {
+    let itemSize = 4
+
+    var presets: [Preset]
+    
+    public init(presets: [Preset]) {
+        self.presets = presets
+    }
+
+    public var numItems: Word {
+        var numZones = 1 // 1 = terminator
+        for preset in self.presets {
+            // Count the global zone.
+            if preset.hasGlobalZone {
+                numZones += 1
+            }
+
+            // Count the preset zones.
+            numZones += preset.zones.count
+        }
+        return Word(numZones)
+    }
+    
+    public func writeItem(out: OutputStream, generatorIndex: Word, modulatorIndex: Word) {
+        // TODO: Write generator index
+        // TODO: Write modulator index
+    }
+}
+
+extension PbagChunk: Chunk {
+    public var name: String {
+        get {
+            return "pbag"
+        }
+    }
+    
+    public var size: DWord {
+        return DWord(8 + self.itemSize * Int(self.numItems))
+    }
+
+    public func write(out: OutputStream) {
+        self.writeHeader(out: out, name: self.name, size: Int(self.size))
+        
+        // Presets:
+        var generatorIndex = 0
+        var modulatorIndex = 0
+        for preset in self.presets {
+            if preset.hasGlobalZone {
+                // Write the global zone
+                self.writeItem(out: out, generatorIndex: Word(generatorIndex), modulatorIndex: Word(modulatorIndex))
+                
+                generatorIndex += preset.globalZone.generators.count
+                modulatorIndex += preset.globalZone.modulators.count
+            }
+
+            // Preset zones:
+            for zone in preset.zones {
+                self.writeItem(out: out, generatorIndex: Word(generatorIndex), modulatorIndex: Word(modulatorIndex))
+                
+                generatorIndex += (zone.hasInstrument ? 1 : 0) + zone.generators.size
+                modulatorIndex += zone.modulators.size
+            }
+        }
+        
+        // Write out the last terminator item
+        self.writeItem(out: out, generatorIndex: Word(generatorIndex), modulatorIndex: Word(modulatorIndex))
+        
+        // Write a padding byte if necessary
+        if self.size % 2 != 0 {
+            // TODO: Write a zero byte
+        }
+    }
+    
+    public func writeHeader(out: OutputStream, name: String, size: Int) {
+        // TODO: write the chunk name
+        // TODO: write the chunk size
     }
 }
 
@@ -85,14 +495,70 @@ enum SoundFontError: Error {
     case samplePoolOverflow
 }
 
-public class SampleSubChunk: Chunk {
-    var samples: [Short]
+public class SampleChunk {
+    var samples: [Sample]
     
-    public init(data: Data) {
-        self.name = "smpl"
-        
+    public init() {
+        self.samples = [Sample]()
     }
+    
+    public init(samples: [Sample]) {
+        self.samples = samples
+    }
+
+    public var samplePoolSize: Int {
+        var size = 0
+        for sample in self.samples {
+            size +=
+            UInt16.byteWidth
+            * (sample.data.count + Sample.terminatorSampleLength)
+            
+        }
+        return size
+    }
+}
+
+extension SampleChunk: Chunk {
+    public var name: String {
+        get {
+            return "smpl"
+        }
+    }
+    
+    public var size: DWord {
+        return DWord(self.samplePoolSize + 8)
+    }
+
+    public func write(out: OutputStream) {
+        self.writeHeader(out: out, name: self.name, size: Int(self.size - 8))
         
+        // Write the chunk data
+        for sample in self.samples {
+            // Write the samples
+            for value in sample.data {
+                // TODO: Write Int16 to out
+            }
+            
+            // Write terminator samples
+            for i in 0..<Sample.terminatorSampleLength {
+                // TODO: Write zero Int16
+            }
+        }
+        
+        // Write a padding byte if necessary
+        if self.size % 2 != 0 {
+            // TODO: Write zero byte to `out`
+        }
+    }
+    
+    public func writeHeader(out: OutputStream, name: String, size: Int) {
+        // TODO: Write the ID "RIFF"
+
+        // TODO: Write the file size
+        
+        // TODO: Write the form type
+
+    }
 }
 
 public class SampleDataListChunk: ListChunk {
@@ -110,6 +576,10 @@ public class SampleDataListChunk: ListChunk {
             }
             return DWord(size)
         }
+    }
+    
+    public init() {
+        self.samples = [Sample]()
     }
     
     public init(samples: [Sample]) {
@@ -131,7 +601,29 @@ public class PresetDataListChunk: ListChunk {
     }
 }
 
+// Secion 4.1: SFBK-form
+public class RIFFChunk {
+    public var name: String
+    public var sampleData: SampleDataListChunk
+    public var presetData: PresetDataListChunk
+    
+    public init() {
+        name = "sfbk"
+        sampleData = SampleDataListChunk()
+        presetData = PresetDataListChunk()
+    }
+}
+
+
 public class PresetHeaderChunk: Chunk {
+    var presetName: String
+    var preset: Word
+    var bank: Word
+    var presetBagIndex: Word
+    var library: DWord
+    var genre: DWord
+    var morphology: DWord
+    
     let itemSize = 38  // the item size of "phdr" chunk
     
     var presets: [Preset]
@@ -147,6 +639,9 @@ public class PresetHeaderChunk: Chunk {
 }
 
 public class PresetBagChunk: Chunk {
+    var genIndex: Word
+    var modIndex: Word
+    
     let itemSize = 4  // the item size of "pbag" chunk
 
 }

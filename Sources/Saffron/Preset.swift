@@ -173,6 +173,9 @@ public struct SampleHeaderSubChunk {
 }
 
 public struct Preset {
+    public var hasGlobalZone: Bool {
+        return true
+    }
     
 }
 
