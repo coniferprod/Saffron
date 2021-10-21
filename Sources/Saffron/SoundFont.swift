@@ -7,7 +7,6 @@ public typealias FourCC = DWord
 public typealias Short = Int16
 
 public typealias ByteArray = [Byte]
-public typealias ChunkData = ByteArray
 
 // From https://stackoverflow.com/a/47221437/1016326
 extension FixedWidthInteger {

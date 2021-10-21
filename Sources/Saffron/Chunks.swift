@@ -1,18 +1,12 @@
 import Foundation
 
-protocol Chunkable {
-    var ckID: FourCC { get set }
-    var ckSize: DWord { get set }
-    var ckData: ChunkData { get set }
-}
-
-// Represents a chunk in the RIFF protocol
+/// Represents a chunk in the RIFF protocol
 public class Chunk {
-    public var name: String   // chunk name (will have to convert this to and from FourCC)
-    public var size: DWord // chunk size in bytes, including header
-    public var data: ChunkData
+    public var name: String  // chunk type identifier (converted to FourCC as necessary)
+    public var size: DWord  // chunk size field (size of data in bytes)
+    public var data: ByteArray  // chunk data
 
-    public init(name: String, size: DWord, data: ChunkData) {
+    public init(name: String, size: DWord, data: ByteArray) {
         self.name = name
         self.size = size
         self.data = data
@@ -62,11 +56,27 @@ public class InfoListChunk: ListChunk {
     public init() {
         var chunks = [Chunk]()
         
+        // Mandatory 'ifil' subchunk:
         let versionTag = VersionTag(major: 2, minor: 0)
         let data = versionTag.asData()
         let versionChunk = Chunk(name: "ifil", size: DWord(data.count), data: data)
         chunks.append(versionChunk)
 
+        // Optional 'isng' subchunk is ignored for now
+        
+        // INAM (mandatory)
+        var nameData = ChunkData()
+        nameData.append(contentsOf: "General MIDI".utf8)
+        chunks.append(Chunk(name: "INAM", size: 12, data: nameData))
+        
+        // No ROM samples, so ignore the IROM and iver subchunks
+        
+        var creationData = ChunkData()
+        creationData.append(contentsOf: "April 10, 2021".utf8) // byte count is even
+        chunks.append(Chunk(name: "ICRD", size: 14, data: creationData))
+        
+        // Ignore IENG, IPRD, ICOP, ICMT, and ISFT subchunks.
+        
         super.init(name: "INFO", subchunks: chunks)
     }
 }
@@ -92,7 +102,7 @@ public class SampleDataListChunk: ListChunk {
         get {
             var size = 0
             for sample in self.samples {
-                size += UInt16.byteWidth * sample.data.size + Limits.terminatorSampleLength
+                size += UInt16.byteWidth * sample.data.count + Limits.terminatorSampleLength
                 if size > UInt32.max {
                     //throw SoundFontError.samplePoolOverflow
                     // TODO: handle the error
@@ -105,9 +115,9 @@ public class SampleDataListChunk: ListChunk {
     public init(samples: [Sample]) {
         self.samples = samples
 
+        var chunks = [Chunk]()
         for sample in self.samples {
-            let chunk = Chunk(name: "smpl", size: <#T##DWord#>, data: <#T##ChunkData#>)
-            
+            chunks.append(Chunk(name: "smpl", size: 0, data: ChunkData()))
         }
         
         super.init(name: "sdta", subchunks: chunks)
@@ -172,7 +182,7 @@ public class HeaderSubChunk: Chunk {
 }
     
     
-public class VersionChunk: Chunk {
+public class Version: Chunk {
     private var version: VersionTag
     
     public init(version: VersionTag) {
