@@ -5,6 +5,7 @@ public typealias Word = UInt16
 public typealias DWord = UInt32
 public typealias FourCC = DWord
 public typealias Short = Int16
+public typealias Char = Int8
 
 public typealias ByteArray = [Byte]
 

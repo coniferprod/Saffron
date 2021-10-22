@@ -700,3 +700,13 @@ public class Version: Chunk {
                 
     }
 }
+
+public enum SubChunks {}
+
+extension SubChunks {
+    public struct Copyright: Chunk {
+        public var name = "ICOP"
+        public var size = 
+    }
+}
+

@@ -53,11 +53,18 @@ public struct ModulatorList {
     }
 }
 
-//public typealias GenAmountType = Word  // this is actually a union type, see spec
+public struct Ranges {
+    let low: Byte
+    let high: Byte
+    
+    public init(low: Byte, high: Byte) {
+        self.low = low
+        self.high = high
+    }
+}
 
-// Use Swift enum as a discriminated union
-public enum GenAmountType {
-    case ranges(RangesType)
+public enum GeneratorAmount {
+    case ranges(Ranges)
     case shortAmount(Short)
     case wordAmount(Word)
 }
@@ -65,12 +72,24 @@ public enum GenAmountType {
 // PGEN sub-chunk, see section 7.5
 public struct GeneratorList {
     let genOper: SFGenerator
-    let genAmount: GenAmountType
+    let generatorAmount: GeneratorAmount
     
-    public init(genOper: SFGenerator, genAmount: GenAmountType) {
+    public init(genOper: SFGenerator, generatorAmount: GeneratorAmount) {
         self.genOper = genOper
-        self.genAmount = genAmount
+        self.generatorAmount = generatorAmount
     }
+}
+
+// Enumeration, see spec section 7.10 and 4.5
+public enum SampleLink: Word {
+    case monoSample = 1
+    case rightSample = 2
+    case leftSample = 4
+    case linkedSample = 8
+    case romMonoSample = 0x8001
+    case romRightSample = 0x8002
+    case romLeftSample = 0x8004
+    case romLinkedSample = 0x8008
 }
 
 // INST sub-chunk, see section 7.6
@@ -114,35 +133,13 @@ public struct InstrumentModulatorSubChunk {
 
 // IGEN sub-chunk, see section 7.9
 public struct InstrumentGeneratorList {
-    let genOper: SFGenerator
-    let genAmount: GenAmountType
+    let generatorOperator: Generator
+    let generatorAmount: GeneratorAmount
     
-    public init(genOper: SFGenerator, genAmount: GenAmountType) {
-        self.genOper = genOper
-        self.genAmount = genAmount
+    public init(generatorOperator: SFGenerator, generatorAmount: GeneratorAmount) {
+        self.generatorOperator = generatorOperator
+        self.generatorAmount = generatorAmount
     }
-}
-
-public struct RangesType {
-    let low: Byte
-    let high: Byte
-    
-    public init(low: Byte, high: Byte) {
-        self.low = low
-        self.high = high
-    }
-}
-
-// Enumeration, see spec section 7.10
-public enum SampleLinkType: Word {
-    case monoSample = 1
-    case rightSample = 2
-    case leftSample = 4
-    case linkedSample = 8
-    case romMonoSample = 32769
-    case romRightSample = 32770
-    case romLeftSample = 32772
-    case romLinkedSample = 32776
 }
 
 // SHDR sub-chunk, see section 7.10
@@ -156,7 +153,7 @@ public struct SampleHeaderSubChunk {
     let originalPitch: Byte
     let pitchCorrection: Int8 // original user CHAR type, has both pos and neg values
     let sampleLink: Word
-    let sampleType: SampleLinkType
+    let sampleType: SampleLink
 
     public init(instrumentName: ByteArray, start: DWord, end: DWord, startLoop: DWord, endLoop: DWord, sampleRate: DWord, originalPitch: Byte, pitchCorrection: Int8, sampleLink: Word, sampleType: SampleLinkType) {
         self.instrumentName = instrumentName
