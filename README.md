@@ -2,6 +2,11 @@
 
 SoundFont 2.0 (SF2) library for iOS and macOS Swift applications.
 
+**WARNING**: This project is not really proceeding. I'm leaving it up
+in case someone has ideas about how to go forward, but it may also
+end up archived. Most likely I will
+be focusing on the [Bitwig multisample format](https://github.com/bitwig/multisample).
+
 ## Building with Travis CI
 
 [Swift Package Continuous Integration Guide](https://learningswift.brightdigit.com/swift-package-continuous-integration-guide/)

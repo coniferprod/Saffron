@@ -1,7 +1,30 @@
 import Foundation
 
+public struct Inst {
+    var instName: String  // array 20 of char
+    var instBagNdx: Word
+}
+
+public struct InstBag {
+    var instGenNdx: Word
+    var instModNdx: Word
+}
+
+public struct InstModList {
+    var modSrcOper: Modulator
+    var modDestOper: Generator
+    var modAmount: Short
+    var modAmtSrcOper: Modulator
+    var modTransOper: Transform
+}
+
+public struct InstGenList {
+    var genOper: Generator
+    var genAmount: GenAmount
+}
+
 public class Instrument {
-    var name: String
+    var name: String  // array 20 of char
     var zones: [InstrumentZone]
     var globalZone: InstrumentZone?
     

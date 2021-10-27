@@ -9,6 +9,36 @@ public typealias Char = Int8
 
 public typealias ByteArray = [Byte]
 
+// Zero-terminated string for RIFF (ZSTR)
+struct ZStr {
+    let value: String
+    
+    var bytes: ByteArray {
+        get {
+            var result = ByteArray()
+            for ch in value {
+                result.append(ch.asciiValue ?? 0x20)
+            }
+            return result
+        }
+    }
+}
+
+public struct Ranges {
+    let low: Byte
+    let high: Byte
+    
+    public init(low: Byte, high: Byte) {
+        self.low = low
+        self.high = high
+    }
+}
+
+
+enum SoundFontError: Error {
+    case samplePoolOverflow
+}
+
 // From https://stackoverflow.com/a/47221437/1016326
 extension FixedWidthInteger {
     var byteWidth: Int {
@@ -78,6 +108,12 @@ extension UInt16 {
     }
 }
 
+extension DWord {
+    var bytes: [UInt8] {
+        return _convertToBytes(self, withCapacity: MemoryLayout<Self>.size)
+    }
+}
+
 public struct VersionTag {
     let major: Word
     let minor: Word
@@ -87,12 +123,25 @@ public struct VersionTag {
         self.minor = minor
     }
     
-    public func asData() -> ChunkData {
-        var result = ChunkData()
+    public var bytes: ByteArray {
+        var result = ByteArray()
         result.append(contentsOf: self.major.littleEndian.bytes)
         result.append(contentsOf: self.minor.littleEndian.bytes)
         return result
     }
+    
+    /*
+     do {
+         try versionData.set(index: 0, Byte(version.major >> 8))
+         try versionData.set(index: 1, UInt8(version.major & 0x00ff))
+         
+         try versionData.set(index: 2, Byte(version.minor >> 8))
+         try versionData.set(index: 3, UInt8(version.minor & 0x00ff))
+     }
+     catch {
+         print("Index out of bounds")
+     }
+     */
 }
 
 public struct Limits {
@@ -131,21 +180,14 @@ public class SoundFont {
     var presets = [Preset]()
     var instruments = [Instrument]()
     var samples = [Sample]()
-
-    var riff: RIFFChunk
     
     public init() {
         self.soundEngineName = "Unknown"
         self.bankName = "unknown"
         
-        let infoListChunk = InfoListChunk()
-        let sampleDataChunk = SampleDataListChunk()
-        let presetDataChunk = PresetDataListChunk()
-        
-        self.riff = RIFFChunk(subchunks: [infoListChunk, sampleDataChunk, presetDataChunk])
-        //self.riff.addChunk(makeInfoListChunk())
-        //self.riff.addChunk(makeSdtaListChunk())
-        //self.riff.addChunk(makePdtaListChunk())
+        let infoListChunk = INFOListChunk()
+        let sampleDataChunk = SdtaListChunk()
+        let presetDataChunk = PdtaListChunk()        
     }
     
     public func write(fileName: String) throws {
@@ -159,81 +201,7 @@ public class SoundFont {
         return String(s[start..<end])
     }
     
-    private func makeInfoListChunk() -> ListChunk {
-        var subchunks = [Chunk]()
-        subchunks.append(makeVersionChunk(name: "ifil", version: VersionTag(major: 2, minor: 1)))
-        subchunks.append(makeZSTRChunk(name: "isng", data: stringUpToLimit(s: self.soundEngineName, maxLength: Limits.infoTextMaxLength)))
-        subchunks.append(makeZSTRChunk(name: "INAM", data: stringUpToLimit(s: self.bankName, maxLength: Limits.infoTextMaxLength)))
-        
-        // Optional chunks:
-        if let soundROMName = self.soundROMName {
-            subchunks.append(makeZSTRChunk(name: "irom", data: stringUpToLimit(s: soundROMName, maxLength: Limits.infoTextMaxLength)))
-        }
-        
-        if let soundROMVersion = self.soundROMVersion {
-            subchunks.append(makeVersionChunk(name: "iver", version: soundROMVersion))
-        }
-        
-        if let creationDate = self.creationDate {
-            subchunks.append(makeZSTRChunk(name: "ICRD", data: stringUpToLimit(s: creationDate, maxLength: Limits.infoTextMaxLength)))
-        }
-        
-        if let designers = self.designers {
-            subchunks.append(makeZSTRChunk(name: "IENG", data: stringUpToLimit(s: designers, maxLength: Limits.infoTextMaxLength)))
-        }
-        
-        if let productName = self.productName {
-            subchunks.append(makeZSTRChunk(name: "IPRD", data: stringUpToLimit(s: productName, maxLength: Limits.infoTextMaxLength)))
-        }
-        
-        if let copyright = self.copyright {
-            subchunks.append(makeZSTRChunk(name: "ICOP", data: stringUpToLimit(s: copyright, maxLength: Limits.infoTextMaxLength)))
-        }
-        
-        if let comments = self.comments {
-            subchunks.append(makeZSTRChunk(name: "ICMT", data: stringUpToLimit(s: comments, maxLength: Limits.infoTextMaxLength)))
-        }
-        
-        if let software = self.software {
-            subchunks.append(makeZSTRChunk(name: "ISFT", data: stringUpToLimit(s: software, maxLength: Limits.infoTextMaxLength)))
-        }
-
-        return ListChunk(name: "INFO", subchunks: subchunks)
-    }
-    
-    private func makeSdtaListChunk() -> ListChunk {
-        var subchunks = [Chunk]()
-        
-        subchunks.append(SampleChunk(samples: self.samples))
-     
-        return ListChunk(name: "sdta", subchunks: subchunks)
-    }
-    
-    private func makePdtaListChunk() -> ListChunk {
-        var subchunks = [Chunk]()
-
-        // TODO: Handle pdta
-        // PHDR, PBAG, PMOD, PGEN, INST, IBAG, IMOD, IGEN, SHDR
-        subchunks.append(PresetHeaderChunk(presets: self.presets))
-        /*
-        subchunks.append(PresetZoneChunk(presets: self.presets))
-        subchunks.append(PresetZoneModulatorChunk(presets: self.presets))
-        subchunks.append(PresetZoneGeneratorChunk(presets: self.presets))
-        subchunks.append(InstrumentHeaderChunk(instruments: self.instruments))
-        subchunks.append(InstrumentZoneChunk(instruments: self.instruments))
-        subchunks.append(InstrumentZoneModulatorChunk(instruments: self.instruments))
-        subchunks.append(InstrumentZoneGeneratorChunk(instruments: self.instruments))
-        subchunks.append(SampleHeaderChunk(samples: self.samples))
-        */
-        
-        return ListChunk(name: "pdta", subchunks: subchunks)
-    }
-    
-    private func makeVersionChunk(name: String, version: VersionTag) -> Chunk {
-        let versionData = ChunkData(maxSize: 4, initialValue: 0)
-        return Chunk(name: name, data: versionData)
-    }
-    
+    /*
     // Make a chunk with a zero-terminated string as data
     private func makeZSTRChunk(name: String, data: String) -> Chunk {
         // Get the bytes from the string (ASCII-only, so UTF-8 should be fine)
@@ -250,6 +218,7 @@ public class SoundFont {
         
         return Chunk(name: name, data: stringData)
     }
+    */
     
     fileprivate let defaultSoundEngine = "EMU8000"
     fileprivate let defaultBankName = "Untitled"
@@ -260,7 +229,8 @@ extension SoundFont: CustomStringConvertible {
         var buf = ""
         buf += "Bank = \(self.bankName)\n"
         buf += "Engine = \(self.bankName)\n\n"
-        buf += "\(self.riff)\n"
+        //buf += "\(self.riff)\n"
         return buf
     }
 }
+
