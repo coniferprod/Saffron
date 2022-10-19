@@ -35,5 +35,15 @@ public class Sample {
         self.sampleName = name
         self.data = data
         
+        self.sampleName = ""
+        self.start = 0
+        self.end = 0
+        self.startLoop = 0
+        self.endLoop = 0
+        self.sampleRate = 0
+        self.originalPitch = 0
+        self.pitchCorrection = 0x00
+        self.sampleLink = 0
+        self.sampleType = .leftSample
     }
 }

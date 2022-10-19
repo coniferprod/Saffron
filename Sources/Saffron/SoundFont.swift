@@ -129,19 +129,6 @@ public struct VersionTag {
         result.append(contentsOf: self.minor.littleEndian.bytes)
         return result
     }
-    
-    /*
-     do {
-         try versionData.set(index: 0, Byte(version.major >> 8))
-         try versionData.set(index: 1, UInt8(version.major & 0x00ff))
-         
-         try versionData.set(index: 2, Byte(version.minor >> 8))
-         try versionData.set(index: 3, UInt8(version.minor & 0x00ff))
-     }
-     catch {
-         print("Index out of bounds")
-     }
-     */
 }
 
 public struct Limits {
@@ -185,40 +172,16 @@ public class SoundFont {
         self.soundEngineName = "Unknown"
         self.bankName = "unknown"
         
-        let infoListChunk = INFOListChunk()
-        let sampleDataChunk = SdtaListChunk()
-        let presetDataChunk = PdtaListChunk()        
+        let infoListChunk = ListChunk(name: "INFO", children: [])
+        let sampleDataChunk = ListChunk(name: "sdta", children: [])
+        let presetDataChunk = ListChunk(name: "pdta", children: [])
     }
-    
-    public func write(fileName: String) throws {
-
-        // TODO: Write everything to output file
-    }
-    
+        
     private func stringUpToLimit(s: String, maxLength: Int) -> String {
         let start = s.startIndex
         let end = s.index(s.startIndex, offsetBy: min(s.count, maxLength))
         return String(s[start..<end])
     }
-    
-    /*
-    // Make a chunk with a zero-terminated string as data
-    private func makeZSTRChunk(name: String, data: String) -> Chunk {
-        // Get the bytes from the string (ASCII-only, so UTF-8 should be fine)
-        let buf: [Byte] = Array(data.utf8)
-        
-        // Make a fized-size array with room for the terminating zero.
-        // The array elements are initialized to zero, so there is no need to set the terminator.
-        var stringData = ChunkData(maxSize: buf.count + 1, initialValue: 0)
-        
-        // Copy the bytes of the string over
-        for (i, b) in buf.enumerated() {
-            try! stringData.set(index: i, b)
-        }
-        
-        return Chunk(name: name, data: stringData)
-    }
-    */
     
     fileprivate let defaultSoundEngine = "EMU8000"
     fileprivate let defaultBankName = "Untitled"
@@ -233,4 +196,3 @@ extension SoundFont: CustomStringConvertible {
         return buf
     }
 }
-

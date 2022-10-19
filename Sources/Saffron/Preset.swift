@@ -1,7 +1,7 @@
 import Foundation
 
 // PHDR sub-chunk, see section 7.2
-public struct PresetHeader {
+public class PresetHeader {
     let presetName: ByteArray  // 20 characters, filled up with zeros
     let preset: Word
     let bank: Word
@@ -21,8 +21,24 @@ public struct PresetHeader {
     }
 }
 
+extension PresetHeader: Chunk {
+    public var name: String {
+        get {
+            return "PHDR"
+        }
+    }
+
+    public var size: DWord {
+        return 0
+    }
+    
+    public var data: ByteArray {
+        return ByteArray()
+    }
+}
+
 // PBAG sub-chunk, see section 7.3
-public struct PresetBag {
+public class PresetBag {
     let generatorIndex: Word
     let modulatorIndex: Word
     
@@ -32,50 +48,56 @@ public struct PresetBag {
     }
 }
 
-public typealias Modulator = Word
-public typealias Generator = Word
-public typealias Transform = Word
+extension PresetBag: Chunk {
+    public var name: String {
+        get {
+            return "PBAG"
+        }
+    }
 
-public struct ModList {
-    let modSrcOper: Modulator
-    let modDestOper: Generator
-    let modAmount: Short
-    let modAmtSrcOper: Modulator
-    let modTransOper: Transform
+    public var size: DWord {
+        return 0
+    }
     
-    public init(modSrcOper: Modulator, modDestOper: Generator, modAmount: Short, modAmtSrcOper: Modulator, modTransOper: Transform) {
-        self.modSrcOper = modSrcOper
-        self.modDestOper = modDestOper
-        self.modAmount = modAmount
-        self.modAmtSrcOper = modAmtSrcOper
-        self.modTransOper = modTransOper
+    public var data: ByteArray {
+        return ByteArray()
     }
 }
 
-public enum GenAmount {
+public typealias SFModulator = Word
+public typealias SFGenerator = Word
+public typealias SFTransform = Word
+
+public enum GeneratorAmount {
     case ranges(Ranges)
     case shortAmount(Short)
     case wordAmount(Word)
 }
 
-public struct GenList {
-    let genOper: Generator
-    let genAmount: GenAmount
+// PGEN subchunk, Section 7.5
+public class GeneratorList {
+    let genOper: SFGenerator
+    let genAmount: GeneratorAmount
     
-    public init(genOper: Generator, genAmount: GenAmount) {
+    public init(genOper: SFGenerator, genAmount: GeneratorAmount) {
         self.genOper = genOper
         self.genAmount = genAmount
     }
 }
 
-// INST sub-chunk, see section 7.6
-public struct InstrumentSubChunk {
-    let instrumentName: ByteArray  // 20 characters, filled up with zeros
-    let instrumentBagIndex: Word
+extension GeneratorList: Chunk {
+    public var name: String {
+        get {
+            return "PGEN"
+        }
+    }
+
+    public var size: DWord {
+        return 0
+    }
     
-    public init(instrumentName: ByteArray, instrumentBagIndex: Word) {
-        self.instrumentName = instrumentName
-        self.instrumentBagIndex = instrumentBagIndex
+    public var data: ByteArray {
+        return ByteArray()
     }
 }
 
