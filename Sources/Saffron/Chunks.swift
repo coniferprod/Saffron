@@ -180,29 +180,6 @@ extension CreationDate: Chunk {
     }
 }
 
-public func makeInfoListChunk() -> ListChunk {
-    var chunk: ListChunk
-    
-    chunk.children = [
-        FileVersion(VersionTag(major: 2, minor: 0)), // Mandatory 'ifil' subchunk
-        // Optional 'isng' subchunk is ignored for now
-        BankName("General MIDI"),  // mandatory INAM
-        // No ROM samples, so ignore the IROM and iver subchunks
-        CreationDate("October 19, 2022"),  // ICRD
-        // Ignore IENG, IPRD, ICOP, ICMT, and ISFT subchunks for now
-    ]
-    
-    return chunk
-}
-
-// The sdta-list chunk contains a single optional smpl sub-chunk
-// which contains all the RAM based sound data.
-public func makeSampleDataListChunk() -> ListChunk {
-    var chunk: ListChunk
-
-    return chunk
-}
-
 public func getSamplePoolSize(samples: [Sample]) -> DWord {
     var size = 0
     for sample in samples {

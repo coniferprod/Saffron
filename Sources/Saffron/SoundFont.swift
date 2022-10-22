@@ -172,8 +172,22 @@ public class SoundFont {
         self.soundEngineName = "Unknown"
         self.bankName = "unknown"
         
-        let infoListChunk = ListChunk(name: "INFO", children: [])
+        let infoListChunk = ListChunk(
+            name: "INFO",
+            children: [
+                FileVersion(VersionTag(major: 2, minor: 0)), // Mandatory 'ifil' subchunk
+                // Optional 'isng' subchunk is ignored for now
+                BankName("General MIDI"),  // mandatory INAM
+                // No ROM samples, so ignore the IROM and iver subchunks
+                CreationDate("October 19, 2022"),  // ICRD
+                // Ignore IENG, IPRD, ICOP, ICMT, and ISFT subchunks for now
+            ]
+        )
+        
+        // The sdta-list chunk contains a single optional smpl sub-chunk
+        // which contains all the RAM based sound data.
         let sampleDataChunk = ListChunk(name: "sdta", children: [])
+        
         let presetDataChunk = ListChunk(name: "pdta", children: [])
     }
         
