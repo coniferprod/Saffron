@@ -28,15 +28,15 @@ extension FileVersion: Chunk {
     }
     
     public var size: DWord {
-        return DWord(self.version.bytes.count)
+        return DWord(self.version.bytesLE.count)
     }
     
     public var data: ByteArray {
         var result = ByteArray()
         let fourCC = self.name.toFourCC()
-        result.append(contentsOf: fourCC.littleEndian.bytes)
-        result.append(contentsOf: self.size.littleEndian.bytes)
-        result.append(contentsOf: self.version.bytes)
+        result.append(contentsOf: fourCC.bytesBE)
+        result.append(contentsOf: self.size.bytesLE)
+        result.append(contentsOf: self.version.bytesLE)
         return result
     }
 }
@@ -67,8 +67,8 @@ extension BankName: Chunk {
     public var data: ByteArray {
         var result = ByteArray()
         let fourCC = self.name.toFourCC()
-        result.append(contentsOf: fourCC.littleEndian.bytes)
-        result.append(contentsOf: self.size.littleEndian.bytes)
+        result.append(contentsOf: fourCC.bytesLE)
+        result.append(contentsOf: self.size.bytesLE)
         result.append(contentsOf: ZStr(value: self.bankName).bytes)
         return result
     }
@@ -100,8 +100,8 @@ extension CreationDate: Chunk {
     public var data: ByteArray {
         var result = ByteArray()
         let fourCC = self.name.toFourCC()
-        result.append(contentsOf: fourCC.littleEndian.bytes)
-        result.append(contentsOf: self.size.littleEndian.bytes)
+        result.append(contentsOf: fourCC.bytesLE)
+        result.append(contentsOf: self.size.bytesLE)
         result.append(contentsOf: ZStr(value: self.creationDate).bytes)
 
         // Write a padding byte if necessary

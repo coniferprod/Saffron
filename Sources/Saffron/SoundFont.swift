@@ -9,11 +9,11 @@ public typealias Char = Int8
 
 public typealias ByteArray = [Byte]
 
-// Zero-terminated string for RIFF (ZSTR)
-struct ZStr {
-    let value: String
+/// Zero-terminated string for RIFF (ZSTR)
+public struct ZStr {
+    public let value: String
     
-    var bytes: ByteArray {
+    public var bytes: ByteArray {
         get {
             var result = ByteArray()
             for ch in value {
@@ -41,7 +41,11 @@ enum SoundFontError: Error {
 
 
 extension FixedWidthInteger {
-    var bytes: ByteArray {
+    public var bytesBE: ByteArray {
+        withUnsafeBytes(of: bigEndian, Array.init)
+    }
+    
+    public var bytesLE: ByteArray {
         withUnsafeBytes(of: littleEndian, Array.init)
     }
 }
@@ -72,10 +76,10 @@ public struct VersionTag {
         self.minor = minor
     }
     
-    public var bytes: ByteArray {
+    public var bytesLE: ByteArray {
         var result = ByteArray()
-        result.append(contentsOf: self.major.littleEndian.bytes)
-        result.append(contentsOf: self.minor.littleEndian.bytes)
+        result.append(contentsOf: self.major.bytesLE)
+        result.append(contentsOf: self.minor.bytesLE)
         return result
     }
 }
@@ -121,23 +125,13 @@ public class SoundFont {
         self.soundEngineName = "Unknown"
         self.bankName = "unknown"
         
-        let infoListChunk = ListChunk(
-            name: "INFO",
-            children: [
-                FileVersion(VersionTag(major: 2, minor: 0)), // Mandatory 'ifil' subchunk
-                // Optional 'isng' subchunk is ignored for now
-                BankName("General MIDI"),  // mandatory INAM
-                // No ROM samples, so ignore the IROM and iver subchunks
-                CreationDate("October 19, 2022"),  // ICRD
-                // Ignore IENG, IPRD, ICOP, ICMT, and ISFT subchunks for now
-            ]
-        )
-        
-        // The sdta-list chunk contains a single optional smpl sub-chunk
-        // which contains all the RAM based sound data.
-        let sampleDataChunk = ListChunk(name: "sdta", children: [])
-        
-        let presetDataChunk = ListChunk(name: "pdta", children: [])
+    }
+    
+    public init(samples: [Sample]) {
+        self.soundEngineName = "Unknown"
+        self.bankName = "unknown"
+
+        self.samples = samples
     }
         
     private func stringUpToLimit(s: String, maxLength: Int) -> String {
@@ -148,6 +142,37 @@ public class SoundFont {
     
     fileprivate let defaultSoundEngine = "EMU8000"
     fileprivate let defaultBankName = "Untitled"
+    
+    public var data: ByteArray {
+        var result = ByteArray()
+        
+        let infoListChunk = RIFFListChunk(name: "INFO")
+        infoListChunk.addSubchunk(subchunk: FileVersion(VersionTag(major: 2, minor: 0))) // Mandatory 'ifil' subchunk
+        // Optional 'isng' subchunk is ignored for now
+        infoListChunk.addSubchunk(subchunk: BankName("General MIDI"))  // mandatory INAM
+        // No ROM samples, so ignore the IROM and iver subchunks
+        infoListChunk.addSubchunk(subchunk: CreationDate("October 19, 2022"))  // ICRD
+        // Ignore IENG, IPRD, ICOP, ICMT, and ISFT subchunks for the time being
+        
+        result.append(contentsOf: infoListChunk.data)
+        
+        // The sdta-list chunk contains a single optional smpl sub-chunk
+        // which contains all the RAM based sound data.
+        let sampleDataChunk = RIFFListChunk(name: "sdta")
+        
+        for sample in self.samples {
+            sampleDataChunk.addSubchunk(subchunk: <#T##Chunk#>)
+        }
+        
+        result.append(contentsOf: sampleDataChunk.data)
+ 
+        // The Preset, Instrument, and Sample Header data
+        let presetDataChunk = RIFFListChunk(name: "pdta")
+
+        result.append(contentsOf: presetDataChunk.data)
+        
+        return result
+    }
 }
 
 extension SoundFont: CustomStringConvertible {
@@ -155,7 +180,6 @@ extension SoundFont: CustomStringConvertible {
         var buf = ""
         buf += "Bank = \(self.bankName)\n"
         buf += "Engine = \(self.bankName)\n\n"
-        //buf += "\(self.riff)\n"
         return buf
     }
 }

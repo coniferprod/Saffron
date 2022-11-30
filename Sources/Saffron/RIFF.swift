@@ -6,48 +6,72 @@ public protocol Chunk {
     var data: ByteArray { get }  // the actual data plus a pad byte if required to word align
 }
 
-/// A chunk with sub-chunks.
-public class ListChunk {
-    public var name: String
-
-    public var children: [Chunk]
+public class RIFFListChunk: Chunk {
+    var _name: String
+    var subchunks: [Chunk]
     
-    public init(name: String, children: [Chunk]) {
-        self.name = name
-        self.children = children
+    /// Constructs a new empty RIFFListChunk using the specified list type.
+    public init(name: String) {
+        self._name = name
+        self.subchunks = []
     }
-}
 
-extension ListChunk: Chunk {
+    /// Returns the name of this chunk.
+    public var name: String {
+        return _name
+    }
+    
+    public func addSubchunk(subchunk: Chunk) {
+        self.subchunks.append(subchunk)
+    }
+    
+    public func clearSubchunks() {
+        self.subchunks.removeAll()
+    }
+    
     public var size: DWord {
-        var result: DWord = 0
-        for child in children {
-            result += child.size
+        var sz = 0
+        for subchunk in self.subchunks {
+            sz += Int(subchunk.size)
         }
+        return DWord(12 + sz)
+    }
+    
+    private var header: ByteArray {
+        var result = ByteArray()
+
+        let listFourCC = "LIST".toFourCC()
+        result.append(contentsOf: listFourCC.bytesBE)
+
+        result.append(contentsOf: self.size.bytesLE)
+
+        let nameFourCC = self.name.toFourCC()
+        result.append(contentsOf: nameFourCC.bytesBE)
+
         return result
     }
     
     public var data: ByteArray {
         var result = ByteArray()
-        for chunk in self.children {
-            result.append(contentsOf: chunk.data)
+
+        result.append(contentsOf: self.header)
+        
+        for subchunk in self.subchunks {
+            result.append(contentsOf: subchunk.data)
         }
+        
         return result
     }
 }
 
-extension ListChunk: CustomStringConvertible {
-    public var description: String {
-        return "LIST: \(name)"
-    }
-}
-
 public struct RIFF {
+    let riffString = "RIFF"
+    
     var name: String  // RIFF form name, like 'sfbk'
     var chunks: [Chunk]
     
     func showChunks() {
-        print("RIFF: \(name)")
+        print("\(riffString): \(name)")
         for chunk in self.chunks {
             print(chunk)
         }
@@ -62,14 +86,14 @@ public struct RIFF {
     }
     
     var data: ByteArray {
-        let riffFourCC = "RIFF".toFourCC()
+        let riffFourCC = riffString.toFourCC()
         let nameFourCC = self.name.toFourCC()
 
         var result = [UInt8]()
-        result.append(contentsOf: riffFourCC.littleEndian.bytes)
-        result.append(contentsOf: self.size.littleEndian.bytes)
+        result.append(contentsOf: riffFourCC.bytesBE)
+        result.append(contentsOf: self.size.bytesLE)
 
-        result.append(contentsOf: nameFourCC.littleEndian.bytes)
+        result.append(contentsOf: nameFourCC.bytesBE)
 
         for chunk in self.chunks {
             result.append(contentsOf: chunk.data)
@@ -78,4 +102,3 @@ public struct RIFF {
         return result
     }
 }
-
