@@ -1,12 +1,12 @@
 import Foundation
 
 enum Subchunk {
-    case ifil(FileVersion)
+    case ifil(VersionTag)
     case isng(String)
-    case INAM(BankName)
+    case INAM(String)
     case irom(String)
     case iver(VersionTag)
-    case ICRD(CreationDate)
+    case ICRD(String)
     case IENG(String)
     case IPRD(String)
     case ICOP(String)
@@ -14,15 +14,32 @@ enum Subchunk {
     case ISFT(String)
 }
 
-public class FileVersion {
+public struct VersionTag {
+    let major: Word
+    let minor: Word
+    
+    public init(major: Word, minor: Word) {
+        self.major = major
+        self.minor = minor
+    }
+    
+    public var bytesLE: ByteArray {
+        var result = ByteArray()
+        result.append(contentsOf: self.major.bytesLE)
+        result.append(contentsOf: self.minor.bytesLE)
+        return result
+    }
+}
+
+public class VersionChunk {
     public let version: VersionTag
 
-    public init(_ version: VersionTag) {
+    public init(version: VersionTag) {
         self.version = version
     }
 }
 
-extension FileVersion: Chunk {
+extension VersionChunk: Chunk {
     public var name: String {
         return "ifil"
     }
@@ -37,78 +54,6 @@ extension FileVersion: Chunk {
         result.append(contentsOf: fourCC.bytesBE)
         result.append(contentsOf: self.size.bytesLE)
         result.append(contentsOf: self.version.bytesLE)
-        return result
-    }
-}
-
-public class BankName {
-    public let bankName: String
-    
-    public init(_ bankName: String) {
-        self.bankName = bankName
-    }
-}
-
-extension BankName: Chunk {
-    public var name: String {
-        get {
-            return "INAM"
-        }
-    }
-    
-    public var size: DWord {
-        var sz = ZStr(value: self.bankName).bytes.count
-        if sz % 2 != 0 {
-            sz += 1
-        }
-        return DWord(8 + sz)
-    }
-    
-    public var data: ByteArray {
-        var result = ByteArray()
-        let fourCC = self.name.toFourCC()
-        result.append(contentsOf: fourCC.bytesLE)
-        result.append(contentsOf: self.size.bytesLE)
-        result.append(contentsOf: ZStr(value: self.bankName).bytes)
-        return result
-    }
-}
-
-public class CreationDate {
-    public let creationDate: String
-
-    public init(_ creationDate: String) {
-        self.creationDate = creationDate
-    }
-}
-
-extension CreationDate: Chunk {
-    public var name: String {
-        get {
-            return "ICRD"
-        }
-    }
-    
-    public var size: DWord {
-        var sz = ZStr(value: self.creationDate).bytes.count
-        if sz % 2 != 0 {
-            sz += 1
-        }
-        return DWord(8 + sz)
-    }
-    
-    public var data: ByteArray {
-        var result = ByteArray()
-        let fourCC = self.name.toFourCC()
-        result.append(contentsOf: fourCC.bytesLE)
-        result.append(contentsOf: self.size.bytesLE)
-        result.append(contentsOf: ZStr(value: self.creationDate).bytes)
-
-        // Write a padding byte if necessary
-        if result.count % 2 != 0 {
-            result.append(0x00)
-        }
-
         return result
     }
 }
@@ -131,7 +76,7 @@ public func getSamplePoolSize(samples: [Sample]) -> DWord {
 // the smpl sub-chunk and any referenced ROM samples. It is always a
 // multiple of forty-six bytes in length, and contains one record for
 // each sample plus a terminal record according to the structure
-public class SampleHeader {
+public class SampleHeaderChunk {
     var samples: [Sample]
     
     public init(samples: [Sample]) {
@@ -139,11 +84,9 @@ public class SampleHeader {
     }
 }
 
-extension SampleHeader: Chunk {
+extension SampleHeaderChunk: Chunk {
     public var name: String {
-        get {
-            return "SHDR"
-        }
+        return "SHDR"
     }
     
     public var size: DWord {
@@ -182,9 +125,7 @@ public class SampleChunk {
 
 extension SampleChunk: Chunk {
     public var name: String {
-        get {
-            return "smpl"
-        }
+        return "smpl"
     }
     
     public var size: DWord {

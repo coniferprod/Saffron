@@ -19,6 +19,10 @@ public struct ZStr {
             for ch in value {
                 result.append(ch.asciiValue ?? 0x20)
             }
+            result.append(0x00)  // add terminator
+            if result.count % 2 != 0 {
+                result.append(0x00)  // make count even
+            }
             return result
         }
     }
@@ -67,23 +71,6 @@ extension String {
     }
 }
 
-public struct VersionTag {
-    let major: Word
-    let minor: Word
-    
-    public init(major: Word, minor: Word) {
-        self.major = major
-        self.minor = minor
-    }
-    
-    public var bytesLE: ByteArray {
-        var result = ByteArray()
-        result.append(contentsOf: self.major.bytesLE)
-        result.append(contentsOf: self.minor.bytesLE)
-        return result
-    }
-}
-
 public struct Limits {
     static let infoTextMaxLength = 256 - 1 // max length of info chunk text minus zero terminator
     static let terminatorSampleLength = 46 // the length of terminator samples, in sample data points
@@ -122,14 +109,14 @@ public class SoundFont {
     var samples = [Sample]()
     
     public init() {
-        self.soundEngineName = "Unknown"
-        self.bankName = "unknown"
+        self.soundEngineName = defaultSoundEngine
+        self.bankName = defaultBankName
         
     }
     
     public init(samples: [Sample]) {
-        self.soundEngineName = "Unknown"
-        self.bankName = "unknown"
+        self.soundEngineName = defaultSoundEngine
+        self.bankName = defaultBankName
 
         self.samples = samples
     }
@@ -143,33 +130,69 @@ public class SoundFont {
     fileprivate let defaultSoundEngine = "EMU8000"
     fileprivate let defaultBankName = "Untitled"
     
+    public func makeInfoListChunk() -> RIFFListChunk {
+        var info = RIFFListChunk(name: "INFO")
+        
+        //
+        // Mandatory chunks
+        //
+        
+        info.addSubchunk(subchunk: VersionChunk(version: VersionTag(major: 2, minor: 1)))
+        info.addSubchunk(subchunk: makeZStrChunk(name: "isng", value: self.soundEngineName))
+        info.addSubchunk(subchunk: makeZStrChunk(name: "INAM", value: self.bankName))
+        
+        //
+        // Optional chunks
+        //
+
+        if let romName = self.soundROMName {
+            info.addSubchunk(subchunk: makeZStrChunk(name: "irom", value: romName))
+        }
+        
+        if let romVersion = self.soundROMVersion {
+            info.addSubchunk(subchunk: VersionChunk(version: romVersion))
+        }
+        
+        if let creationDate = self.creationDate {
+            info.addSubchunk(subchunk: makeZStrChunk(name: "ICRD", value: creationDate))
+        }
+        
+        if let designers = self.designers {
+            info.addSubchunk(subchunk: makeZStrChunk(name: "IENG", value: designers))
+        }
+        
+        if let copyright = self.copyright {
+            info.addSubchunk(subchunk: makeZStrChunk(name: "ICOP", value: copyright))
+        }
+        
+        if let comments = self.comments {
+            info.addSubchunk(subchunk: makeZStrChunk(name: "ICMT", value: comments))
+        }
+        
+        if let software = self.software {
+            info.addSubchunk(subchunk: makeZStrChunk(name: "ISFT", value: software))
+        }
+        
+        return info
+    }
+    
+
+    func makeZStrChunk(name: String, value: String) -> RIFFChunk {
+        return RIFFChunk(name: name, data: ZStr(value: value).bytes)
+    }
+    
+    func makeRIFF() -> RIFF {
+        var riff = RIFF(name: "sfbk")
+        riff.addChunk(chunk: self.makeInfoListChunk())
+        return riff
+    }
+    
     public var data: ByteArray {
         var result = ByteArray()
         
-        let infoListChunk = RIFFListChunk(name: "INFO")
-        infoListChunk.addSubchunk(subchunk: FileVersion(VersionTag(major: 2, minor: 0))) // Mandatory 'ifil' subchunk
-        // Optional 'isng' subchunk is ignored for now
-        infoListChunk.addSubchunk(subchunk: BankName("General MIDI"))  // mandatory INAM
-        // No ROM samples, so ignore the IROM and iver subchunks
-        infoListChunk.addSubchunk(subchunk: CreationDate("October 19, 2022"))  // ICRD
-        // Ignore IENG, IPRD, ICOP, ICMT, and ISFT subchunks for the time being
+        let riff = makeRIFF()
         
-        result.append(contentsOf: infoListChunk.data)
-        
-        // The sdta-list chunk contains a single optional smpl sub-chunk
-        // which contains all the RAM based sound data.
-        let sampleDataChunk = RIFFListChunk(name: "sdta")
-        
-        for sample in self.samples {
-            sampleDataChunk.addSubchunk(subchunk: <#T##Chunk#>)
-        }
-        
-        result.append(contentsOf: sampleDataChunk.data)
- 
-        // The Preset, Instrument, and Sample Header data
-        let presetDataChunk = RIFFListChunk(name: "pdta")
-
-        result.append(contentsOf: presetDataChunk.data)
+        result.append(contentsOf: riff.data)
         
         return result
     }
@@ -177,9 +200,12 @@ public class SoundFont {
 
 extension SoundFont: CustomStringConvertible {
     public var description: String {
-        var buf = ""
-        buf += "Bank = \(self.bankName)\n"
-        buf += "Engine = \(self.bankName)\n\n"
-        return buf
+        var lines = [String]()
+        
+        lines.append("Bank = \(self.bankName)")
+        lines.append("Engine = \(self.bankName)")
+        lines.append("Sound ROM = \(self.soundROMName ?? "N/A")")
+        
+        return lines.joined(separator: "\n")
     }
 }

@@ -1,26 +1,26 @@
 import Foundation
 
-public struct sfInst {
-    var achInstName: String  // array 20 of char
-    var wInstBagNdx: Word  // index to the instrument’s zone list in the IBAG sub-chunk
+public struct ModulatorList {
+    let source: Modulator
+    let destination: Generator
+    let amount: Short
+    let amountSource: Modulator
+    let transform: Transform
 }
 
-public struct sfInstBag {
-    var wInstGenNdx: Word
-    var wInstModNdx: Word
+public struct Instrument {
+    let name: String // array 20 of char
+    let bagIndex: Word  // index to the instrument’s zone list in the IBAG sub-chunk
 }
 
-public struct sfModList {
-    var sfModSrcOper: SFModulator
-    var sfModDestOper: SFGenerator
-    var modAmount: Short
-    var sfModAmtSrcOper: SFModulator
-    var sfModTransOper: SFTransform
+public struct InstrumentBag {
+    let generatorIndex: Word
+    let modulatorIndex: Word
 }
 
-public struct sfInstGenList {
-    var sfGenOper: SFGenerator
-    var genAmount: GeneratorAmount
+public struct InstrumentGeneratorList {
+    let genOp: Generator
+    let genAmount: GeneratorAmount
 }
 
 public class InstrumentDefinition {
@@ -60,19 +60,17 @@ public class InstrumentDefinition {
 // Always a multiple of twenty-two bytes in length, and contains
 // a minimum of two records, one record for each instrument and
 // one for a terminal record.
-public class Instrument {
-    var instruments: [sfInst]
+public class InstrumentChunk {
+    var instruments: [Instrument]
 
-    init(instruments: [sfInst]) {
+    init(instruments: [Instrument]) {
         self.instruments = instruments
     }
 }
 
-extension Instrument: Chunk {
+extension InstrumentChunk: Chunk {
     public var name: String {
-        get {
-            return "INST"
-        }
+        return "INST"
     }
 
     public var size: DWord {
@@ -89,10 +87,10 @@ extension Instrument: Chunk {
 // It is always a multiple of four bytes in length,
 // and contains one record for each instrument zone
 // plus one record for a terminal zone.
-public class InstrumentBag {
-    var zones: [sfInstBag]
+public class InstrumentBagChunk {
+    var zones: [InstrumentBag]
     
-    init(zones: [sfInstBag]) {
+    init(zones: [InstrumentBag]) {
         self.zones = zones
     }
 }
@@ -120,9 +118,9 @@ extension InstrumentBag: Chunk {
 public class InstrumentModulators {
     let itemSize = 10
     
-    var modulators: [sfModList]
+    var modulators: [ModulatorList]
     
-    public init(modulators: [sfModList]) {
+    public init(modulators: [ModulatorList]) {
         self.modulators = modulators
     }
     
@@ -147,9 +145,7 @@ public class InstrumentModulators {
 
 extension InstrumentModulators: Chunk {
     public var name: String {
-        get {
-            return "IMOD"
-        }
+        return "IMOD"
     }
     
     public var size: DWord {
@@ -166,12 +162,12 @@ extension InstrumentModulators: Chunk {
 // instrument zone within the SoundFont compatible file. It is always a multiple of four
 // bytes in length, and contains one or more generators for each zone (except for a global
 // zone containing only modulators) plus a terminal record.
-public class InstrumentGenerator {
+public class InstrumentGeneratorChunk {
     let itemSize = 4  // the item size of "igen" chunk in bytes
 
-    var generators: [sfInstGenList]
+    var generators: [InstrumentGeneratorList]
     
-    public init(generators: [sfInstGenList]) {
+    public init(generators: [InstrumentGeneratorList]) {
         self.generators = generators
     }
     
@@ -193,11 +189,9 @@ public class InstrumentGenerator {
     }
 }
 
-extension InstrumentGenerator: Chunk {
+extension InstrumentGeneratorChunk: Chunk {
     public var name: String {
-        get {
-            return "IGEN"
-        }
+        return "IGEN"
     }
     
     public var size: DWord {

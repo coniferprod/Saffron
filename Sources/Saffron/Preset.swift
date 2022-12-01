@@ -1,7 +1,7 @@
 import Foundation
 
 // PHDR sub-chunk, see section 7.2
-public class PresetHeader {
+public class PresetHeaderChunk {
     let presetName: ByteArray  // 20 characters, filled up with zeros
     let preset: Word
     let bank: Word
@@ -21,11 +21,9 @@ public class PresetHeader {
     }
 }
 
-extension PresetHeader: Chunk {
+extension PresetHeaderChunk: Chunk {
     public var name: String {
-        get {
-            return "PHDR"
-        }
+        return "PHDR"
     }
 
     public var size: DWord {
@@ -38,7 +36,7 @@ extension PresetHeader: Chunk {
 }
 
 // PBAG sub-chunk, see section 7.3
-public class PresetBag {
+public class PresetBagChunk {
     let generatorIndex: Word
     let modulatorIndex: Word
     
@@ -48,11 +46,9 @@ public class PresetBag {
     }
 }
 
-extension PresetBag: Chunk {
+extension PresetBagChunk: Chunk {
     public var name: String {
-        get {
-            return "PBAG"
-        }
+        return "PBAG"
     }
 
     public var size: DWord {
@@ -64,9 +60,9 @@ extension PresetBag: Chunk {
     }
 }
 
-public typealias SFModulator = Word
-public typealias SFGenerator = Word
-public typealias SFTransform = Word
+public typealias Modulator = Word
+public typealias Generator = Word
+public typealias Transform = Word
 
 public enum GeneratorAmount {
     case ranges(Ranges)
@@ -75,21 +71,19 @@ public enum GeneratorAmount {
 }
 
 // PGEN subchunk, Section 7.5
-public class GeneratorList {
-    let genOper: SFGenerator
+public class GeneratorListChunk {
+    let genOper: Generator
     let genAmount: GeneratorAmount
     
-    public init(genOper: SFGenerator, genAmount: GeneratorAmount) {
+    public init(genOper: Generator, genAmount: GeneratorAmount) {
         self.genOper = genOper
         self.genAmount = genAmount
     }
 }
 
-extension GeneratorList: Chunk {
+extension GeneratorListChunk: Chunk {
     public var name: String {
-        get {
-            return "PGEN"
-        }
+        return "PGEN"
     }
 
     public var size: DWord {
